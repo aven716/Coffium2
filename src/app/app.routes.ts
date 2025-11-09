@@ -5,17 +5,18 @@ import { HomePage } from './home/home.page';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'register',
+    redirectTo: 'home',
     pathMatch: 'full',
   },
   {
-    path: 'register',
-    component: RegisterPage,
+    path: 'home',
+    loadComponent: () => import('./home/home.page').then(m => m.HomePage)
   },
   {
-    path: 'home',
-    component: HomePage,
+    path: 'register',
+    loadComponent: () => import('./pages/register/register.page').then(m => m.RegisterPage)
   },
+ 
   {
     path: 'verify-otp',
     loadComponent: () => import('./verify-otp/verify-otp.page').then( m => m.VerifyOtpPage)
@@ -53,6 +54,10 @@ export const routes: Routes = [
   {
     path: 'about',
     loadComponent: () => import('./pages/about/about.page').then(m => m.AboutPage)
+  },
+  {
+    path: 'cart',
+    loadComponent: () => import('./pages/cart/cart.page').then(m => m.CartPage)
   },
 
   

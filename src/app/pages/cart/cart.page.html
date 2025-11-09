@@ -1,0 +1,114 @@
+<app-header></app-header>
+
+<ion-content class="cart-content">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading your cart...</p>
+    </div>
+
+    <!-- Empty Cart -->
+    <div *ngIf="!isLoading && cartItems.length === 0" class="empty-state">
+        <div class="empty-icon">
+            <ion-icon name="cart-outline"></ion-icon>
+        </div>
+        <h2>Your cart is empty</h2>
+        <p>Discover our amazing products and add them to your cart!</p>
+        <ion-button class="continue-btn" (click)="continueShopping()">
+            Start Shopping
+        </ion-button>
+    </div>
+
+    <!-- Cart Items -->
+    <div *ngIf="!isLoading && cartItems.length > 0" class="cart-container">
+        <div class="cart-header">
+            <h2>{{ totalItems }} {{ totalItems === 1 ? 'Item' : 'Items' }}</h2>
+        </div>
+
+        <div class="cart-items">
+            <div *ngFor="let item of cartItems" class="cart-item">
+                <div class="item-image" (click)="goToProduct(item.product_id)">
+                    <img [src]="getProductImage(item.product_image)" [alt]="item.product_name" />
+                </div>
+
+                <div class="item-details">
+                    <h3 class="item-name">{{ item.product_name }}</h3>
+                    <p class="item-option" *ngIf="item.option_selected">{{ item.option_selected }}</p>
+                    <p class="item-price">₱{{ item.unit_price.toFixed(2) }}</p>
+
+                    <div class="quantity-control">
+                        <button class="qty-btn" (click)="updateQuantity(item, -1)">
+                            <ion-icon name="remove"></ion-icon>
+                        </button>
+                        <span class="qty-value">{{ item.quantity }}</span>
+                        <button class="qty-btn" (click)="updateQuantity(item, 1)">
+                            <ion-icon name="add"></ion-icon>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="item-actions">
+                    <p class="item-total">₱{{ item.total_price.toFixed(2) }}</p>
+                    <button class="remove-btn" (click)="removeItem(item)">
+                        <ion-icon name="trash"></ion-icon>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary">
+            <h3>Order Summary</h3>
+
+            <!-- Delivery Options -->
+            <div class="delivery-options">
+                <button class="delivery-option" [class.active]="deliveryOption === 'pickup'"
+                    (click)="setDeliveryOption('pickup')">
+                    <div class="option-icon">🏪</div>
+                    <div class="option-text">
+                        <span class="option-title">Pickup</span>
+                        <span class="option-subtitle">Free</span>
+                    </div>
+                </button>
+
+                <button class="delivery-option" [class.active]="deliveryOption === 'delivery'"
+                    (click)="setDeliveryOption('delivery')">
+                    <div class="option-icon">🚚</div>
+                    <div class="option-text">
+                        <span class="option-title">Delivery</span>
+                        <span class="option-subtitle">₱50.00</span>
+                    </div>
+                </button>
+            </div>
+
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span class="summary-value">₱{{ totalAmount.toFixed(2) }}</span>
+            </div>
+
+            <div class="summary-row" *ngIf="deliveryOption === 'delivery'">
+                <span>Delivery Fee</span>
+                <span class="summary-value">₱{{ deliveryFee.toFixed(2) }}</span>
+            </div>
+
+            <div class="summary-divider"></div>
+
+            <div class="summary-row total-row">
+                <span>Total</span>
+                <span class="total-value">₱{{ grandTotal.toFixed(2) }}</span>
+            </div>
+        </div>
+    </div>
+</ion-content>
+
+<ion-footer *ngIf="!isLoading && cartItems.length > 0" class="cart-footer">
+    <div class="footer-content">
+        <div class="footer-total">
+            <span class="footer-label">Total ({{ deliveryOption === 'pickup' ? 'Pickup' : 'Delivery' }})</span>
+            <span class="footer-amount">₱{{ grandTotal.toFixed(2) }}</span>
+        </div>
+        <ion-button class="checkout-btn" expand="block" (click)="checkout()">
+            Proceed to Checkout
+        </ion-button>
+    </div>
+</ion-footer>

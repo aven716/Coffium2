@@ -176,3 +176,47 @@ ion-menu ion-list ion-item.logout:hover ion-icon {
     /* removes default inline spacing */
 
 }
+
+ion-header {
+  padding-top: var(--ion-safe-area-top);
+  z-index: 10;
+}
+
+/* Guest Toast Styles */
+ion-toast.guest-toast {
+  --background: #ffffff;
+  --color: #000000;
+  --border-radius: 8px;
+  --min-height: 70px;
+  --max-height: 85px;
+  --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --width: 90%;
+}
+
+ion-toast.guest-toast::part(container) {
+  padding: 8px 12px;
+  min-height: 70px;
+  max-height: 85px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+ion-toast.guest-toast::part(message) {
+  font-size: 11px;
+  line-height: 1.2;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+ion-toast.guest-toast::part(button) {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 8px;
+  color: #13442e;
+  text-transform: none;
+  height: 28px;
+  min-height: 28px;
+}

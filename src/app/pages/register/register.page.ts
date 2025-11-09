@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
-import { IonicModule, ToastController } from '@ionic/angular';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import {  ToastController } from '@ionic/angular';
+import { IonContent, IonInput, IonButton, IonLabel, IonItem, IonCardContent, IonCard } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -8,7 +9,7 @@ import { Router, RouterModule } from '@angular/router';
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, HttpClientModule, RouterModule],
+  imports: [ CommonModule, FormsModule, IonContent, IonInput, RouterModule, IonButton, IonLabel, IonItem, IonCardContent, IonCard ],
   templateUrl: './register.page.html',
   styleUrls: ['./register.page.scss'],
   

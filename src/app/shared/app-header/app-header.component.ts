@@ -1,16 +1,24 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, MenuController, ToastController } from '@ionic/angular';
+import { MenuController, ToastController } from '@ionic/angular';
+import {IonIcon, IonInput, IonList, IonItem, IonLabel, IonAvatar, IonCard, 
+  IonCardHeader, IonContent, IonSearchbar, IonHeader, IonToolbar, IonMenuButton, IonButtons, IonSpinner, IonThumbnail, IonButton
+ } from '@ionic/angular/standalone';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { EventEmitter, Output } from '@angular/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { Platform } from '@ionic/angular';
+
 
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IonHeader, IonToolbar, IonMenuButton, IonButtons, 
+    IonIcon, IonInput, IonList, IonItem, IonLabel, IonAvatar, IonCard, IonCardHeader, IonContent, 
+    IonSearchbar, IonSpinner, IonThumbnail, IonButton],
   templateUrl: './app-header.component.html',
   styleUrls: ['./app-header.component.scss']
 })
@@ -36,15 +44,27 @@ export class AppHeaderComponent implements OnInit {
     private http: HttpClient,
     private menu: MenuController,
     private router: Router,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private platform: Platform
   ) { }
 
   ngOnInit() {
+    this.platform.ready().then(async () => {
+      try {
+        await StatusBar.setOverlaysWebView({ overlay: false });
+        await StatusBar.setBackgroundColor({ color: '#35593E' });
+        await StatusBar.setStyle({ style: Style.Light });
+      } catch (err) {
+        console.warn('StatusBar plugin not available', err);
+      }
+    });
+    
     const userId = localStorage.getItem('user_id');
     if (userId) {
       this.loadUserData(userId);
     }
   }
+
 
   toggleSidebar() {
     console.log('Header click - emitting toggleMenu');

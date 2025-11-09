@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { IonicModule, MenuController, ToastController } from '@ionic/angular';
+import {  MenuController, ToastController, } from '@ionic/angular';
+import { IonToast, IonTextarea, IonButton, IonIcon, IonSpinner, IonContent } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppHeaderComponent } from '../shared/app-header/app-header.component';
@@ -9,7 +10,7 @@ import { AppHeaderComponent } from '../shared/app-header/app-header.component';
 @Component({
   selector: 'app-product',
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, AppHeaderComponent],
+  imports: [ IonContent, CommonModule, FormsModule, AppHeaderComponent, IonToast, IonTextarea, IonButton, IonIcon, IonSpinner],
   templateUrl: './product.page.html',
   styleUrls: ['./product.page.scss']
 })
@@ -45,6 +46,17 @@ export class ProductPage {
     private toastCtrl: ToastController
   ) { }
 
+  selectedOption: string = ''; // will hold size or pieces
+
+
+  isDrink(): boolean {
+    return this.product && this.product.size === 'coffee'; // or some flag from DB
+  }
+  // --- Set option when user clicks
+  selectOption(option: string) {
+    this.selectedOption = option;
+  }
+
   ngOnInit() {
     // Get user_id from localStorage like in HomePage
     const userId = localStorage.getItem('user_id');
@@ -74,11 +86,17 @@ export class ProductPage {
       return;
     }
 
+    if (!this.selectedOption) {
+      this.showToast('Please select a size or pieces', 'warning');
+      return;
+    }
+
     const payload = {
       user_id: this.user.user_id,
       product_id: product.product_id,
       quantity: quantity,
-      unit_price: product.price   // ✅ this was missing
+      unit_price: product.price,
+      option_selected: this.selectedOption
     };
 
     this.http.post('https://add2mart.shop/ionic/coffium/api/add_to_cart.php', payload)
@@ -87,7 +105,6 @@ export class ProductPage {
         err => this.showToast('Failed to add to cart', 'danger')
       );
   }
-
   // --- Submit review
   submitReview() {
     if (!this.user.user_id) {
@@ -134,6 +151,14 @@ export class ProductPage {
           this.product.rating = res.rating?.average || 0;
           this.product.totalRatings = res.rating?.total || 0;
           this.product.comments = res.comments || [];
+
+          // --- set product options dynamically
+          this.product.options = res.options || [];
+
+          // Optionally preselect the first option
+          if (this.product.options.length > 0) {
+            this.selectedOption = this.product.options[0].option_name;
+          }
         } else {
           console.warn('Product not found', res.error);
         }

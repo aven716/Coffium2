@@ -21,15 +21,18 @@
 </span>
          
       </div>
-    
-      <p class="label">Size: <span class="size-name">Medium</span></p>
-    
-      <div class="size-options">
-        <span class="size-box">S</span>
-        <span class="size-box active">M</span>
-        <span class="size-box">L</span>
-        <span class="size-box">XL</span>
-      </div>
+  <p class="label">
+    {{ product.type === 'drink' ? 'Size:' : 'Pieces:' }}
+    <span class="size-name">{{ selectedOption }}</span>
+  </p>
+  
+  <div class="size-options">
+    <span *ngFor="let opt of product.options" class="size-box" [class.active]="opt.option_name === selectedOption"
+      (click)="selectOption(opt.option_name)">
+      {{ opt.option_name }}
+    </span>
+  </div>
+
     
       <p class="desc">{{ product.description || 'No description available for this product.' }}</p>
     

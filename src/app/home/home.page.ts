@@ -1,28 +1,70 @@
 import { Component } from '@angular/core';
-import { IonicModule, ToastController, MenuController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
-import { RouterModule } from '@angular/router';
-import { Router } from '@angular/router';
-import { AppHeaderComponent } from '../shared/app-header/app-header.component';
+import { RouterModule, Router } from '@angular/router';
 
+// ✅ Ionic Standalone Components
+import {
+  IonItem,
+  IonAvatar,
+  IonLabel,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardSubtitle,
+  IonCardContent,
+  IonChip,
+  ToastController,
+  IonToast
+} from '@ionic/angular/standalone';
+
+// ✅ Other imports
+import {  MenuController } from '@ionic/angular';
+import { AppHeaderComponent } from '../shared/app-header/app-header.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
+  templateUrl: './home.page.html',
+  styleUrls: ['./home.page.scss'],
   imports: [
-    IonicModule,
+    // Angular & Router
     CommonModule,
     FormsModule,
     HttpClientModule,
     RouterModule,
+
+    // ✅ Ionic Components
+    IonItem,
+    IonAvatar,
+    IonLabel,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonContent,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardSubtitle,
+    IonCardContent,
+    IonChip,
+    IonToast,
+
+    // ✅ Shared Component
     AppHeaderComponent
   ],
-  templateUrl: './home.page.html',
-  styleUrls: ['./home.page.scss'],
 })
-
 export class HomePage {
   // Initialize user safely
   user: {
@@ -111,8 +153,41 @@ toggleMenu() {
     this.loadPosters();
     this.loadCategories();
     this.loadProducts();
-    
+
+    // ✅ If no user logged in, show welcome toast
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
+      this.showGuestToast();
+    }
   }
+
+  async showGuestToast() {
+    const toast = await this.toastCtrl.create({
+      message: 'Sign in or register to checkout!',
+      position: 'bottom',
+      color: 'light',
+      mode: 'md', // Try 'md' mode instead of 'ios'
+      cssClass: 'guest-toast',
+      animated: true,
+      buttons: [
+        {
+          text: 'Sign In',
+          handler: () => this.router.navigate(['/login']),
+        } as any,
+        {
+          text: 'Register',
+          handler: () => this.router.navigate(['/register']),
+        } as any,
+        {
+          text: 'Dismiss',
+          role: 'cancel',
+        } as any
+      ]
+    });
+
+    await toast.present();
+  }
+
 
   
 

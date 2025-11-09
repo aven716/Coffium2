@@ -10,7 +10,7 @@
       
         <ion-label>
           <h2>{{ user.first_name }} {{ user.last_name }}</h2>
-          <p>Welcome Back!</p>
+        <p>{{ user.user_id ? 'Welcome Back!' : 'Welcome!' }}</p>
         </ion-label>
       
         <!-- Action buttons -->

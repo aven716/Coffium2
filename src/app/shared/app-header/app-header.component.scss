@@ -1,4 +1,6 @@
 /* ================= Header Toolbar ================= */
+
+
 ion-toolbar.header-toolbar {
     
     --min-height: 56px;
@@ -283,4 +285,22 @@ ion-toolbar.header-toolbar::part(content) {
 
 ion-menu-button{
     color: white;
+}
+
+ion-header,
+ion-toolbar.header-toolbar {
+    --box-shadow: none;
+    /* removes shadow */
+    --border-width: 0;
+    /* removes bottom border if any */
+    box-shadow: none !important;
+    /* fallback */
+    border-bottom: none !important;
+    /* fallback */
+}
+
+ion-card,
+ion-item {
+    --box-shadow: none;
+    box-shadow: none !important;
 }

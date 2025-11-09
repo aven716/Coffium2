@@ -1,5 +1,9 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
-import { IonicModule, MenuController, ToastController } from '@ionic/angular';
+import {  MenuController, ToastController } from '@ionic/angular';
+import { IonMenu, IonRouterOutlet, IonApp, IonContent, 
+  IonItem, IonList, IonIcon, IonAvatar, IonLabel, 
+  IonGrid, IonCard, IonTextarea, IonRow, 
+  IonCardHeader, IonHeader, IonToolbar, IonMenuButton, IonChip } from '@ionic/angular/standalone';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { addIcons } from 'ionicons';
@@ -12,7 +16,9 @@ import { h } from 'ionicons/dist/types/stencil-public-runtime';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [IonicModule, RouterModule],
+  imports: [ RouterModule, IonMenu, IonRouterOutlet, IonApp, IonContent, 
+    IonItem, IonList, IonIcon, IonAvatar, IonLabel,  IonGrid, IonCard, IonTextarea, IonRow, IonMenuButton, 
+    IonCardHeader, IonHeader, IonToolbar, IonChip ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
@@ -35,24 +41,26 @@ export class AppComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    // Add icons
-    addIcons({ cart, menu, heart, star, cartOutline, searchOutline, search, logOutOutline, personOutline,
-      listOutline, helpCircleOutline, informationCircleOutline, heartOutline, receiptOutline, chevronDown, chevronUp
-    , settingsOutline, bagOutline,homeOutline });
+    // Register icons
+    addIcons({
+      cart, menu, heart, star, cartOutline, searchOutline, search, logOutOutline, personOutline,
+      listOutline, helpCircleOutline, informationCircleOutline, heartOutline, receiptOutline,
+      chevronDown, chevronUp, settingsOutline, bagOutline, homeOutline
+    });
 
-    // Load user info
-    if (this.router.url === '/' || this.router.url === '/register' || this.router.url === '/login') {
-      const userId = localStorage.getItem('user_id');
+    const userId = localStorage.getItem('user_id');
 
-      if (userId) {
-        this.loadUserData(userId);
-        this.router.navigate(['/home']); // navigate automatically if logged in
-      } else {
-        this.router.navigate(['/register']); // or let redirect handle it
+    if (userId) {
+      // ✅ User is logged in — load their data silently
+      this.loadUserData(userId);
+    } else {
+      // ✅ No user logged in — just stay on home (do NOT redirect)
+      if (this.router.url === '/' || this.router.url === '/register' || this.router.url === '/login') {
+        this.router.navigate(['/home']);
       }
     }
-
   }
+
 
   loadUserData(userId: string): Promise<void> {
     return new Promise((resolve, reject) => {
