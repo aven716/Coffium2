@@ -159,7 +159,7 @@
             <span class="label">Total Amount</span>
             <span class="amount">₱{{ totalAmount.toFixed(2) }}</span>
         </div>
-<ion-button [disabled]="isProcessing" (click)="placeOrder()">
+<ion-button  class="place-order-btn" expand="block" [disabled]="isProcessing" (click)="placeOrder()">
     {{ isProcessing ? 'Processing...' : 'Place Order' }}
 </ion-button>
 
