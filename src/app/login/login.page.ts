@@ -42,43 +42,24 @@ export class LoginPage {
 
     this.http.post(
       'https://add2mart.shop/ionic/coffium/api/login.php',
-      {
-        email: this.email,
-        password: this.password
-      },
-      {
-        headers: new HttpHeaders({
-          'Content-Type': 'application/json'
-        })
-      }
+      { email: this.email, password: this.password },
+      { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) }
     ).subscribe(
       (res: any) => {
         if (res.success && res.user) {
           const userId = res.user.user_id || res.user.id || 0;
-          localStorage.setItem('user_id', userId.toString());
+          if (userId) {
+            localStorage.setItem('user_id', String(userId));
+            console.log('Saved user_id:', localStorage.getItem('user_id'));
+          } else {
+            console.error('Login response missing user_id:', res);
+          }
+
           localStorage.setItem('first_name', res.user.first_name || '');
           localStorage.setItem('last_name', res.user.last_name || '');
-          this.http.post('https://add2mart.shop/ionic/coffium/api/login.php', {
-            email: this.email,
-            password: this.password
-          }).subscribe((res: any) => {
-            if (res.success && res.user) {
-              const userId = res.user.user_id;
-              if (userId) {
-                localStorage.setItem('user_id', String(userId));
-              } else {
-                console.error('Login response missing user_id:', res);
-              }
-              localStorage.setItem('first_name', res.user.first_name || '');
-              localStorage.setItem('last_name', res.user.last_name || '');
 
-              this.showToast('Login successful', 'success');
-              this.router.navigateByUrl('/home'); // ✅ Angular navigation (no full reload)
-            } else {
-              this.showToast(res.message || 'Login failed', 'danger');
-            }
-          });
-    
+          this.showToast('Login successful', 'success');
+          this.router.navigateByUrl('/home');
         } else {
           this.showToast(res.message || 'Login failed', 'danger');
         }

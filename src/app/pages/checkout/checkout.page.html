@@ -1,0 +1,166 @@
+<app-header></app-header>
+
+<ion-content class="checkout-content">
+    <div class="checkout-container">
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading checkout...</p>
+        </div>
+
+        <!-- Checkout Form -->
+        <div *ngIf="!isLoading" class="checkout-form">
+
+            <!-- Page Title -->
+            <div class="page-header">
+                <h1>Checkout</h1>
+                <p>Complete your order</p>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="section">
+                <h2 class="section-title">Contact Information</h2>
+                <div class="input-group">
+                    <div class="input-row">
+                        <div class="input-field">
+                            <label>First Name</label>
+                            <input type="text" [(ngModel)]="firstName" placeholder="Enter first name">
+                        </div>
+                        <div class="input-field">
+                            <label>Last Name</label>
+                            <input type="text" [(ngModel)]="lastName" placeholder="Enter last name">
+                        </div>
+                    </div>
+                    <div class="input-field">
+                        <label>Contact Number</label>
+                        <input type="tel" [(ngModel)]="contactNumber" placeholder="09XX XXX XXXX">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Option -->
+            <div class="section">
+                <h2 class="section-title">Delivery Option</h2>
+                <div class="delivery-options">
+                    <button class="option-card" [class.active]="deliveryOption === 'pickup'"
+                        (click)="setDeliveryOption('pickup')">
+                        <div class="option-icon">🏪</div>
+                        <div class="option-content">
+                            <h3>Pickup</h3>
+                            <p>Free - Pick up at store</p>
+                        </div>
+                    </button>
+
+                    <button class="option-card" [class.active]="deliveryOption === 'delivery'"
+                        (click)="setDeliveryOption('delivery')">
+                        <div class="option-icon">🚚</div>
+                        <div class="option-content">
+                            <h3>Delivery</h3>
+                            <p>₱50.00 - Deliver to address</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Delivery Address -->
+      
+          
+<div class="section" *ngIf="deliveryOption === 'delivery'">
+    <h2 class="section-title">
+        <ion-icon name="location-outline"></ion-icon>
+        Delivery Address
+    </h2>
+
+<div class="map-wrapper">
+  <input
+    type="text"
+    placeholder="Search delivery address"
+    [(ngModel)]="address"
+    (keyup.enter)="searchAddress()"
+    class="address-search"
+  />
+  <div #mapContainer class="map-container"></div>
+</div>
+
+</div>
+
+
+      
+
+            <!-- Payment Method -->
+            <div class="section">
+                <h2 class="section-title">Payment Method</h2>
+                <div class="payment-options">
+                    <button class="payment-card" [class.active]="paymentMethod === 'cod'"
+                        (click)="setPaymentMethod('cod')">
+                        <ion-icon name="cash-outline"></ion-icon>
+                        <div class="payment-content">
+                            <h3>Cash on Delivery</h3>
+                            <p>Pay when you receive</p>
+                        </div>
+                    </button>
+
+                    <button class="payment-card" [class.active]="paymentMethod === 'gcash'"
+                        (click)="setPaymentMethod('gcash')">
+                        <div class="gcash-icon">💳</div>
+                        <div class="payment-content">
+                            <h3>GCash</h3>
+                            <p>Pay via GCash</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="section">
+                <h2 class="section-title">Order Summary</h2>
+
+                <!-- Items -->
+                <div class="order-items">
+                    <div *ngFor="let item of cartItems" class="order-item">
+                        <img [src]="getProductImage(item.product_image)" [alt]="item.product_name">
+                        <div class="item-details">
+                            <h4>{{ item.product_name }}</h4>
+                            <p *ngIf="item.option_selected">{{ item.option_selected }}</p>
+                            <p class="quantity">Qty: {{ item.quantity }}</p>
+                        </div>
+                        <div class="item-price">
+                            ₱{{ item.total_price.toFixed(2) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price Breakdown -->
+                <div class="price-summary">
+                    <div class="price-row">
+                        <span>Subtotal</span>
+                        <span>₱{{ subtotal.toFixed(2) }}</span>
+                    </div>
+                    <div class="price-row" *ngIf="deliveryOption === 'delivery'">
+                        <span>Delivery Fee</span>
+                        <span>₱{{ deliveryFee.toFixed(2) }}</span>
+                    </div>
+                    <div class="price-divider"></div>
+                    <div class="price-row total">
+                        <span>Total</span>
+                        <span>₱{{ totalAmount.toFixed(2) }}</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</ion-content>
+
+<ion-footer *ngIf="!isLoading" class="checkout-footer">
+    <div class="footer-content">
+        <div class="footer-total">
+            <span class="label">Total Amount</span>
+            <span class="amount">₱{{ totalAmount.toFixed(2) }}</span>
+        </div>
+        <ion-button class="place-order-btn" expand="block" (click)="placeOrder()" [disabled]="isProcessing">
+            {{ isProcessing ? 'Processing...' : 'Place Order' }}
+        </ion-button>
+    </div>
+</ion-footer>

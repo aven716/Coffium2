@@ -12,6 +12,7 @@ import { cart, menu, heart, star, cartOutline, searchOutline, search,
   helpCircleOutline, informationCircleOutline, heartOutline, receiptOutline, chevronDown, chevronUp
 , settingsOutline, bagOutline,homeOutline } from 'ionicons/icons';
 import { h } from 'ionicons/dist/types/stencil-public-runtime';
+import { App } from '@capacitor/app';
 
 @Component({
   selector: 'app-root',
@@ -38,7 +39,20 @@ export class AppComponent implements OnInit {
     private router: Router,
     private http: HttpClient,
     private toastCtrl: ToastController
-  ) { }
+  ) {
+    App.addListener('appUrlOpen', (data: any) => {
+      console.log('App opened with URL:', data.url);
+      if (data.url.includes('coffium://home')) {
+        const orderId = new URL(data.url).searchParams.get('order_id');
+        if (orderId) {
+          // Navigate to home/dashboard instead of order-success
+          this.router.navigate(['/home'], { state: { orderId } });
+          this.showToast('Payment successful!', 'success');
+        }
+      }
+    });
+
+   }
 
   ngOnInit() {
     // Register icons

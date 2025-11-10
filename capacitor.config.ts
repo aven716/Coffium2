@@ -1,9 +1,18 @@
-import type { CapacitorConfig } from '@capacitor/cli';
-
-const config: CapacitorConfig = {
-  appId: 'com.coffium.app',
+// capacitor.config.ts
+export default {
+  appId: 'com.yourcompany.coffium',
   appName: 'Coffium',
-  webDir: 'www'
+  webDir: 'www',
+  server: {
+    androidScheme: 'https'
+  },
+  plugins: {
+    App: {}
+  },
+  ios: {
+    scheme: 'coffium'   // <-- needed for iOS
+  },
+  android: {
+    scheme: 'coffium'   // <-- needed for Android
+  }
 };
-
-export default config;

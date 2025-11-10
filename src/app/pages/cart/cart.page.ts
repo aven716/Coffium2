@@ -189,8 +189,9 @@ export class CartPage implements OnInit {
             this.showToast('Your cart is empty', 'warning');
             return;
         }
-        // Navigate to checkout page
-        this.router.navigate(['/checkout']);
+        this.router.navigate(['/checkout'], {
+            state: { deliveryOption: this.deliveryOption }
+        });
     }
 
     continueShopping() {
