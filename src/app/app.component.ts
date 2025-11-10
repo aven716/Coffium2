@@ -25,7 +25,7 @@ import { App } from '@capacitor/app';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-
+  apiBaseUrl = 'https://add2mart.shop/ionic/coffium/api/';
   user = {
     user_id: 0,
     first_name: '',
@@ -40,14 +40,27 @@ export class AppComponent implements OnInit {
     private http: HttpClient,
     private toastCtrl: ToastController
   ) {
-    App.addListener('appUrlOpen', (data: any) => {
+    App.addListener('appUrlOpen', async (data: any) => {
       console.log('App opened with URL:', data.url);
+
       if (data.url.includes('coffium://home')) {
         const orderId = new URL(data.url).searchParams.get('order_id');
         if (orderId) {
-          // Navigate to home/dashboard instead of order-success
-          this.router.navigate(['/home'], { state: { orderId } });
-          this.showToast('Payment successful!', 'success');
+          try {
+            // Fetch the full order details
+            const res: any = await this.http
+              .get(`${this.apiBaseUrl}get_order.php?order_id=${orderId}`)
+              .toPromise();
+
+            if (res.success && res.order) {
+              // Navigate to Order Page with full order details
+              this.router.navigate(['/order'], { state: { order: res.order } });
+            } else {
+              console.error('Failed to fetch order:', res.message);
+            }
+          } catch (err) {
+            console.error('Error fetching order:', err);
+          }
         }
       }
     });

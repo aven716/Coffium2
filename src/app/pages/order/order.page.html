@@ -1,0 +1,25 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-title>Order Details</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+    <div *ngIf="order; else loading">
+        <h2>Order #{{ order['order_id'] }}</h2>
+        <p>Name: {{ order['first_name'] }} {{ order['last_name'] }}</p>
+        <p>Address: {{ order['address'] }}</p>
+        <p>Total: ₱{{ order['total_amount'] }}</p>
+
+        <h3>Items:</h3>
+        <ul>
+            <li *ngFor="let item of order['items']">
+                {{ item['product_name'] }} x {{ item['quantity'] }} = ₱{{ item['total_price'] }}
+            </li>
+        </ul>
+    </div>
+
+    <ng-template #loading>
+        <p>Loading order details...</p>
+    </ng-template>
+</ion-content>

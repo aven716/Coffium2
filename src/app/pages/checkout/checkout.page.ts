@@ -102,17 +102,7 @@ export class CheckoutPage implements OnInit, AfterViewInit {
         private loadingCtrl: LoadingController
     ) {
         addIcons({ locationOutline, cardOutline, cashOutline });
-        App.addListener('appUrlOpen', (data: any) => {
-            console.log('App opened with URL:', data.url);
-            if (data.url.includes('coffium://home')) {
-                const orderId = new URL(data.url).searchParams.get('order_id');
-                if (orderId) {
-                    // Navigate to home/dashboard instead of order-success
-                    this.router.navigate(['/home'], { state: { orderId } });
-                    this.showToast('Payment successful!', 'success');
-                }
-            }
-        });
+      
 
     }
     
@@ -126,17 +116,20 @@ export class CheckoutPage implements OnInit, AfterViewInit {
             return;
         }
 
-        // Get delivery option from navigation state
+        // Use bracket notation because state has index signature
         const navigation = this.router.getCurrentNavigation();
-        if (navigation?.extras.state) {
-            this.deliveryOption = navigation.extras.state['deliveryOption'] || 'pickup';
+        if (navigation?.extras.state && navigation.extras.state['orderId']) {
+            const orderId = navigation.extras.state['orderId'];
+            // Navigate directly to OrderPage, no polling needed
+            this.router.navigate(['/order', orderId]);
         }
+
 
         this.loadUserData();
         this.loadCart();
     }
-    
 
+  
     loadCart(): Promise<void> {
         return new Promise((resolve, reject) => {
             this.http.get<any>(`${this.apiBaseUrl}get_cart.php?user_id=${this.userId}`)
@@ -235,84 +228,70 @@ export class CheckoutPage implements OnInit, AfterViewInit {
     }
 
     async placeOrder() {
+        if (this.isProcessing) return; // 🔒 prevent duplicate clicks
+        this.isProcessing = true;
 
-        this.userId = Number(localStorage.getItem('user_id')) || 0;
-        console.log('Checkout user_id on init:', this.userId);
-
-        if (!this.userId) {
-            this.showToast('Please login first', 'warning');
-            this.router.navigate(['/login']);
+        if (!this.validateForm()) {
+            this.isProcessing = false; // reset if validation fails
             return;
         }
 
-    
-        await this.loadCart();
-        if (!this.validateForm()) return;
-
-        if (this.isProcessing) return;
-        this.isProcessing = true;
-
-        const loading = await this.loadingCtrl.create({
-            message: 'Processing your order...',
-            spinner: 'crescent'
-        });
+        const loading = await this.loadingCtrl.create({ message: 'Processing...' });
         await loading.present();
 
-        const orderData: OrderData = {
-            user_id: this.userId,
-            first_name: this.firstName || '',
-            last_name: this.lastName || '',
-            contact_number: this.contactNumber || '',
-            address: this.deliveryOption === 'delivery' ? this.address : 'Pickup at store',
-            delivery_option: this.deliveryOption,
-            payment_method: this.paymentMethod,
-            subtotal: this.subtotal,
-            delivery_fee: this.deliveryFee,
-            total_amount: this.totalAmount,
-            items: this.cartItems.map(item => ({
-                ...item,
-                product_image: item.product_image || '',   // default empty string
-                option_selected: item.option_selected || '' // default empty string
-            }))
-        };
+        try {
+            const orderData: OrderData = {
+                user_id: this.userId,
+                first_name: this.firstName,
+                last_name: this.lastName,
+                contact_number: this.contactNumber,
+                address: this.address,
+                delivery_option: this.deliveryOption,
+                payment_method: this.paymentMethod,
+                subtotal: this.subtotal,
+                delivery_fee: this.deliveryFee,
+                total_amount: this.totalAmount,
+                items: this.cartItems
+            };
 
-        if (this.paymentMethod === 'gcash') {
-            // PayMongo GCash payment flow
-            this.processGCashPayment(orderData, loading);
-        } else {
-            // COD - direct order placement
-            this.createOrder(orderData, loading);
+            // 1️⃣ Create order in the database
+            const res: any = await this.http
+                .post(`${this.apiBaseUrl}create_order.php`, orderData)
+                .toPromise();
+
+            if (!res.success || !res.order_id) {
+                await loading.dismiss();
+                this.showToast(res.message || 'Order creation failed', 'warning');
+                return;
+            }
+
+            const orderId = res.order_id;
+
+            // Store orderId for GCash redirect
+            if (this.paymentMethod === 'gcash') {
+                localStorage.setItem('pending_order_id', orderId);
+                await this.processGCashPayment(orderData, loading);
+            } else {
+                await loading.dismiss();
+                this.showToast('Order placed successfully!', 'success');
+                this.clearCart();
+                this.router.navigate(['/order', orderId]);
+            }
+
+        } catch (error) {
+            await loading.dismiss();
+            console.error(error);
+            this.showToast('Server error, please try again later.', 'danger');
+        }
+        finally {
+            this.isProcessing = false; // 🔓 reset flag
         }
     }
 
-    createOrder(orderData: OrderData, loading: any) {
-        this.http.post(`${this.apiBaseUrl}create_order.php`, orderData)
-            .subscribe({
-                next: async (res: any) => {
-                    await loading.dismiss();
-                    this.isProcessing = false;
 
-                    if (res.success) {
-                        this.showToast('Order placed successfully!', 'success');
-                        this.clearCart();
-                        this.router.navigate(['/order-success'], { state: { orderId: res.order_id } });
-                    } else {
-                        this.showToast(res.message || 'Failed to place order', 'danger');
-                        console.error('Order failed:', res); // <-- log full response
-                    }
-                },
-                error: async (err) => {
-                    await loading.dismiss();
-                    this.isProcessing = false;
-                    console.error('Order HTTP error:', err);
-                    if (err.error) {
-                        console.error('Error message from server:', err.error.message || err.error);
-                    }
-                    this.showToast('Error placing order', 'danger');
-                }
-            });
 
-    }
+
+
 
     async processGCashPayment(orderData: OrderData, loading: HTMLIonLoadingElement) {
         try {
@@ -327,26 +306,29 @@ export class CheckoutPage implements OnInit, AfterViewInit {
                 subtotal: orderData.subtotal,
                 delivery_fee: orderData.delivery_fee,
                 total_amount: orderData.total_amount,
-                items: orderData.items, // include full items array
+                items: orderData.items,
                 amount: orderData.total_amount * 100,
                 description: `Order for ${orderData.first_name} ${orderData.last_name}`
-            }).toPromise(); // or firstValueFrom if using rxjs
+            }).toPromise();
 
-            if (response.success) {
-                console.log('✅ Redirecting to PayMongo checkout:', response.checkout_url);
+            await loading.dismiss();
+
+            if (response.success && response.checkout_url) {
+                // Open GCash checkout
                 window.open(response.checkout_url, '_blank');
+
+                // DO NOT navigate or create order again
+                this.showToast('Redirecting to GCash...', 'primary');
             } else {
                 console.error('❌ Payment creation failed:', response.message);
+                this.showToast('Failed to initiate payment', 'danger');
             }
         } catch (error) {
+            await loading.dismiss();
             console.error('💥 Error in GCash payment:', error);
             this.showToast('Error creating GCash payment', 'danger');
-        } finally {
-            loading.dismiss();
         }
     }
-
-
 
     clearCart() {
         this.http.post(`${this.apiBaseUrl}clear_cart.php`, {
