@@ -94,6 +94,7 @@ ion-chip {
   background-color: rgba(19, 68, 46, 0.1);
   /* light transparent background */
   color: #13442e;
+  font-size: 7px ;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   border: 1px solid rgba(19, 68, 46, 0.2);
@@ -306,3 +307,195 @@ app-header {
   box-shadow: none;
 }
 
+/* ================= Product Cards Redesign ================= */
+.product-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  // Image Container
+  .product-image-container {
+    position: relative;
+    width: 100%;
+    padding-top: 100%; // 1:1 aspect ratio
+    overflow: hidden;
+    background: #f5f5f5;
+   
+    img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    // Rating Badge
+    .rating-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      z-index: 2;
+
+      ion-icon {
+        color: #ffa500;
+        font-size: 14px;
+      }
+
+      span {
+        font-size: 13px;
+        font-weight: 600;
+        color: #333;
+      }
+    }
+  }
+
+  // Product Info
+  .product-info {
+    padding: 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .product-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #13442e;
+      margin: 0 0 6px 0;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 40px;
+    }
+
+    .product-price {
+      font-size: 18px;
+      font-weight: 700;
+      color: #5c724a;
+      margin: 0 0 12px 0;
+    }
+
+    // Action Buttons
+    .product-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: auto;
+
+      .buy-btn {
+        flex: 1;
+        height: 38px;
+        font-size: 14px;
+        font-weight: 600;
+        --background: #a3b68a;
+        --background-hover: #5c724a;
+        --color: #13442e;
+        --border-radius: 10px;
+        margin: 0;
+        text-transform: none;
+      }
+
+      .cart-btn {
+        width: 38px;
+        height: 38px;
+        --background: #13442e;
+        --background-hover: #0a2819;
+        --color: white;
+        --border-radius: 10px;
+        --padding-start: 0;
+        --padding-end: 0;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        ion-icon {
+          font-size: 20px;
+        }
+      }
+    }
+  }
+}
+
+// Grid Improvements
+.products-grid {
+  padding: 0 12px 20px 12px;
+
+  ion-row {
+    margin: 0 -6px;
+  }
+
+  ion-col {
+    padding: 6px;
+  }
+}
+
+// Section Container
+.section-container {
+  background: #fafafa;
+  border-radius: 16px;
+  padding: 16px 0;
+  margin: 16px 12px;
+
+  .section-header {
+    font-size: 20px;
+    font-weight: 700;
+    color: #13442e;
+    margin: 0 0 12px 16px;
+    padding: 0;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 576px) {
+  .product-card {
+    .product-info {
+      padding: 10px;
+
+      .product-name {
+        font-size: 14px;
+        min-height: 38px;
+      }
+
+      .product-price {
+        font-size: 16px;
+      }
+
+      .product-actions {
+        .buy-btn {
+          height: 36px;
+          font-size: 13px;
+        }
+
+        .cart-btn {
+          width: 36px;
+          height: 36px;
+
+          ion-icon {
+            font-size: 18px;
+          }
+        }
+      }
+    }
+  }
+}

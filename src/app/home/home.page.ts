@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router';
-
+import { CartService } from '../services/cart.service';
 // ✅ Ionic Standalone Components
 import {
   IonItem,
@@ -98,7 +98,8 @@ export class HomePage {
     private menu: MenuController,
     private toastCtrl: ToastController,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private cartService: CartService
   ) { }
   productBaseUrl = 'https://add2mart.shop/ionic/coffium/api/images/products/';
 
@@ -290,17 +291,59 @@ toggleMenu() {
   }
 
   loadProducts() {
-    this.http.get('https://add2mart.shop/ionic/coffium/api/get_products.php')
-      .subscribe((res: any) => {
-        if (res.success) {
-          this.allTopProducts = res.products || [];
-          this.topProducts = [...this.allTopProducts];
+    this.http.get<any>('https://add2mart.shop/ionic/coffium/api/get_products.php')
+      .subscribe(
+        async (productsRes) => {
+          if (productsRes.success) {
+            const products = productsRes.products;
 
-          this.allSuggestedProducts = res.products || [];
-          this.suggestedProducts = [...this.allSuggestedProducts];
+            // 🔄 Load ratings for each product
+            const productsWithRatings = await Promise.all(
+              products.map(async (product: any) => {
+                try {
+                  const ratingsRes: any = await this.http
+                    .get(`https://add2mart.shop/ionic/coffium/api/get_ratings.php?product_id=${product.product_id}`)
+                    .toPromise();
+
+                  let average = 0;
+                  let ratingCount = 0;
+
+                  if (ratingsRes && ratingsRes.success && Array.isArray(ratingsRes.ratings) && ratingsRes.ratings.length > 0) {
+                    const total = ratingsRes.ratings.reduce((sum: number, r: any) => sum + Number(r.rating || 0), 0);
+                    ratingCount = ratingsRes.ratings.length;
+                    average = total / ratingCount;
+                  }
+
+                  // ✅ Force to number before calling toFixed
+                  return {
+                    ...product,
+                    rating: Number(average.toFixed(1)),
+                    ratingCount
+                  };
+                } catch (err) {
+                  console.error(`Error loading ratings for product ${product.product_id}:`, err);
+                  return { ...product, rating: 0, ratingCount: 0 };
+                }
+              })
+            );
+
+
+            // ✅ Assign to product lists
+            this.allTopProducts = productsWithRatings;
+            this.allSuggestedProducts = productsWithRatings;
+            this.topProducts = [...this.allTopProducts];
+            this.suggestedProducts = [...this.allSuggestedProducts];
+          } else {
+            this.showToast('Failed to load products', 'danger');
+          }
+        },
+        (err) => {
+          console.error('Error loading products:', err);
+          this.showToast('Server error loading products', 'danger');
         }
-      });
+      );
   }
+
 
   clearFilter() {
     this.selectedCategoryId = null;
@@ -321,8 +364,51 @@ toggleMenu() {
     window.location.href = '/login';
   }
   
+  async quickAddToCart(product: any) {
+    if (!this.user.user_id) {
+      await this.showToast('Please log in to add items to cart', 'warning');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // Check if product has options (sizes, pieces)
+    if (product.options && product.options.length > 0) {
+      // If product has options, go to product page instead
+      this.router.navigate(['/product', product.product_id]);
+      await this.showToast('Please select an option', 'primary');
+      return;
+    }
+
+    // Add directly to cart with quantity 1
+    const success = await this.cartService.addToCart(
+      this.user.user_id,
+      product.product_id,
+      1,
+      product.price
+    );
+
+    if (success) {
+      // Optionally update cart count badge here
+    }
+  }
+
+  /**
+   * Buy now - navigates to product page for selection
+   * then to checkout
+   */
+  buyNow(product: any) {
+    if (!this.user.user_id) {
+      this.showToast('Please log in to continue', 'warning');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // Navigate to product page
+    this.router.navigate(['/product', product.product_id], {
+      queryParams: { buyNow: true }
+    });
  
   }
 
 
-
+}
