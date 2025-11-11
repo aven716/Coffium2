@@ -36,7 +36,11 @@
     
     
       <!-- Posters Carousel Section -->
-    
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)" id="floatingRefresher">
+    <ion-refresher-content pullingIcon="arrow-down" pullingText="Pull to refresh" refreshingSpinner="circles"
+      refreshingText="Refreshing..."></ion-refresher-content>
+  </ion-refresher>
+
       <div id="posterCarousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
           <div class="carousel-item" *ngFor="let poster of posters; let i = index" [class.active]="i === 0">

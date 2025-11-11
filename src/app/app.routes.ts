@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { RegisterPage } from './pages/register/register.page';
 import { HomePage } from './home/home.page';
 
+
 export const routes: Routes = [
   {
     path: '',
@@ -62,7 +63,7 @@ export const routes: Routes = [
 
   {
     path: 'checkout',
-    loadComponent: () => import('./pages/checkout/checkout.page').then(m => m.CheckoutPage)
+    loadComponent: () => import('./pages/checkout/checkout.page').then(m => m.CheckoutPage),
   },
 {
     path: 'order',
@@ -71,6 +72,10 @@ export const routes: Routes = [
   {
     path: 'order/:id',
     loadComponent: () => import('./pages/order/order.page').then(m => m.OrderPage)
+  },
+  {
+    path: 'orders',
+    loadComponent: () => import('./pages/orders/orders.page').then(m => m.OrdersPage)
   },
 
 

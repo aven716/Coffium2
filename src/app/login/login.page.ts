@@ -58,6 +58,11 @@ export class LoginPage {
           localStorage.setItem('first_name', res.user.first_name || '');
           localStorage.setItem('last_name', res.user.last_name || '');
 
+          const app = document.querySelector('app-root') as any;
+          if (app?.refreshMenu) {
+            app.refreshMenu();
+          }
+
           this.showToast('Login successful', 'success');
           this.router.navigateByUrl('/home');
         } else {
@@ -69,6 +74,8 @@ export class LoginPage {
         this.showToast('Server error', 'danger');
       }
     );
+
+    this.menu.enable(false);
   }
 
 }

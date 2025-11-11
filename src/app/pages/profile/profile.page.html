@@ -1,62 +1,189 @@
-<app-header title="Profile" (menuClick)="onHeaderToggleMenu()"></app-header>
+<app-header></app-header>
 
 <ion-content class="profile-content">
-  <div *ngIf="!loading; else loadingState" class="profile-wrapper">
-
-    <div class="profile-card">
-      <ion-avatar>
-        <img [src]="user.profile_image || 'assets/imgs/default-avatar.png'" alt="Profile Picture" />
-      </ion-avatar>
-
-      <h2>{{ user.first_name || 'John' }} {{ user.last_name || 'Doe' }}</h2>
-      <p class="email">{{ user.email || 'johndoe@email.com' }}</p>
-    </div>
-
-    <div class="profile-info">
-      <ion-list lines="none">
-        <ion-item>
-          <ion-icon name="call-outline" slot="start"></ion-icon>
-          <ion-label>{{ user.contact_no || '+63 900 000 0000' }}</ion-label>
-        </ion-item>
-        <ion-item>
-          <ion-icon name="home-outline" slot="start"></ion-icon>
-          <ion-label>{{ user.address || 'Cebu City, Philippines' }}</ion-label>
-        </ion-item>
-      </ion-list>
-    </div>
-
-    <!-- EXTRA ACTIONS SECTION -->
-    <div class="profile-info">
-      <ion-list lines="none">
-        <ion-item button>
-          <ion-icon name="bag-outline" slot="start"></ion-icon>
-          <ion-label>My Orders</ion-label>
-        </ion-item>
-        <ion-item button>
-          <ion-icon name="cart-outline" slot="start"></ion-icon>
-          <ion-label>My Cart</ion-label>
-        </ion-item>
-        <ion-item button>
-          <ion-icon name="heart-outline" slot="start"></ion-icon>
-          <ion-label>Wishlist</ion-label>
-        </ion-item>
-        <ion-item button>
-          <ion-icon name="settings-outline" slot="start"></ion-icon>
-          <ion-label>Settings</ion-label>
-        </ion-item>
-      </ion-list>
-    </div>
-
-  <ion-button expand="block" (click)="logout()" class="logout-btn">
-    <ion-icon name="log-out-outline" slot="start"></ion-icon>
-    Logout
-  </ion-button>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading profile...</p>
   </div>
 
-  <ng-template #loadingState>
-    <div class="loading-container">
-      <ion-spinner name="crescent"></ion-spinner>
-      <p>Loading profile...</p>
+  <!-- Profile Content -->
+  <div *ngIf="!loading" class="profile-container">
+
+    <!-- Profile Header Card -->
+    <div class="profile-header-card">
+      <div class="profile-image-section">
+        <ion-avatar class="profile-avatar">
+          <img [src]="user.profile_image" alt="Profile Picture" />
+        </ion-avatar>
+        <button *ngIf="isEditing" class="change-photo-btn" (click)="fileInput.click()">
+          <ion-icon name="camera-outline"></ion-icon>
+        </button>
+        <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" style="display: none;">
+      </div>
+
+      <div class="profile-header-info">
+        <h1>{{ user.first_name }} {{ user.last_name }}</h1>
+        <p class="email">{{ user.email }}</p>
+      </div>
+
+      <button class="edit-toggle-btn" (click)="toggleEdit()">
+        <ion-icon [name]="isEditing ? 'close-outline' : 'create-outline'"></ion-icon>
+        {{ isEditing ? 'Cancel' : 'Edit' }}
+      </button>
     </div>
-  </ng-template>
+
+    <!-- Personal Information -->
+    <div class="info-section">
+      <h2 class="section-title">Personal Information</h2>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <label>
+            <ion-icon name="person-outline"></ion-icon>
+            First Name
+          </label>
+          <input *ngIf="isEditing" type="text" [(ngModel)]="user.first_name" placeholder="Enter first name">
+          <span *ngIf="!isEditing">{{ user.first_name || 'Not provided' }}</span>
+        </div>
+
+        <div class="info-item">
+          <label>
+            <ion-icon name="person-outline"></ion-icon>
+            Last Name
+          </label>
+          <input *ngIf="isEditing" type="text" [(ngModel)]="user.last_name" placeholder="Enter last name">
+          <span *ngIf="!isEditing">{{ user.last_name || 'Not provided' }}</span>
+        </div>
+
+        <div class="info-item full-width">
+          <label>
+            <ion-icon name="mail-outline"></ion-icon>
+            Email
+          </label>
+          <input *ngIf="isEditing" type="email" [(ngModel)]="user.email" placeholder="Enter email">
+          <span *ngIf="!isEditing">{{ user.email || 'Not provided' }}</span>
+        </div>
+
+        <div class="info-item">
+          <label>
+            <ion-icon name="call-outline"></ion-icon>
+            Contact Number
+          </label>
+          <input *ngIf="isEditing" type="tel" [(ngModel)]="user.contact_no" placeholder="09XX XXX XXXX">
+          <span *ngIf="!isEditing">{{ user.contact_no || 'Not provided' }}</span>
+        </div>
+
+        <div class="info-item">
+          <label>
+            <ion-icon name="male-female-outline"></ion-icon>
+            Gender
+          </label>
+          <select *ngIf="isEditing" [(ngModel)]="user.gender">
+            <option *ngFor="let g of genderOptions" [value]="g">{{ g }}</option>
+          </select>
+          <span *ngIf="!isEditing">{{ user.gender }}</span>
+        </div>
+
+        <div class="info-item full-width">
+          <label>
+            <ion-icon name="calendar-outline"></ion-icon>
+            Birthday
+          </label>
+          <input *ngIf="isEditing" type="date" [(ngModel)]="user.birthday">
+          <span *ngIf="!isEditing">{{ user.birthday || 'Not provided' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Address Information -->
+    <div class="info-section">
+      <h2 class="section-title">Address Information</h2>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <label>
+            <ion-icon name="location-outline"></ion-icon>
+            House/Bldg No.
+          </label>
+          <input *ngIf="isEditing" type="text" [(ngModel)]="user.house_no" placeholder="House number">
+          <span *ngIf="!isEditing">{{ user.house_no || 'Not provided' }}</span>
+        </div>
+
+        <div class="info-item">
+          <label>
+            <ion-icon name="location-outline"></ion-icon>
+            Street
+          </label>
+          <input *ngIf="isEditing" type="text" [(ngModel)]="user.street" placeholder="Street name">
+          <span *ngIf="!isEditing">{{ user.street || 'Not provided' }}</span>
+        </div>
+
+        <div class="info-item">
+          <label>
+            <ion-icon name="location-outline"></ion-icon>
+            Barangay
+          </label>
+          <input *ngIf="isEditing" type="text" [(ngModel)]="user.barangay" placeholder="Barangay">
+          <span *ngIf="!isEditing">{{ user.barangay || 'Not provided' }}</span>
+        </div>
+
+        <div class="info-item">
+          <label>
+            <ion-icon name="location-outline"></ion-icon>
+            City/Province
+          </label>
+          <input *ngIf="isEditing" type="text" [(ngModel)]="user.city_province" placeholder="City or Province">
+          <span *ngIf="!isEditing">{{ user.city_province || 'Not provided' }}</span>
+        </div>
+
+        <div class="info-item full-width">
+          <label>
+            <ion-icon name="location-outline"></ion-icon>
+            Region
+          </label>
+          <input *ngIf="isEditing" type="text" [(ngModel)]="user.region" placeholder="Region">
+          <span *ngIf="!isEditing">{{ user.region || 'Not provided' }}</span>
+        </div>
+
+        <div class="info-item full-width" *ngIf="!isEditing">
+          <label>Full Address</label>
+          <p class="full-address">{{ fullAddress }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save Button (only show when editing) -->
+    <ion-button *ngIf="isEditing" expand="block" class="save-btn" (click)="saveProfile()">
+      <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+      Save Changes
+    </ion-button>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <button class="action-btn" (click)="goToOrders()">
+        <ion-icon name="bag-outline"></ion-icon>
+        <span>My Orders</span>
+      </button>
+      <button class="action-btn" (click)="goToCart()">
+        <ion-icon name="cart-outline"></ion-icon>
+        <span>My Cart</span>
+      </button>
+      <button class="action-btn" (click)="goToFavorites()">
+        <ion-icon name="heart-outline"></ion-icon>
+        <span>Favorites</span>
+      </button>
+      <button class="action-btn" (click)="goToSettings()">
+        <ion-icon name="settings-outline"></ion-icon>
+        <span>Settings</span>
+      </button>
+    </div>
+
+    <!-- Logout Button -->
+    <ion-button expand="block" class="logout-btn" (click)="logout()">
+      <ion-icon name="log-out-outline" slot="start"></ion-icon>
+      Logout
+    </ion-button>
+
+  </div>
 </ion-content>

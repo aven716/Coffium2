@@ -94,7 +94,7 @@ ion-chip {
   background-color: rgba(19, 68, 46, 0.1);
   /* light transparent background */
   color: #13442e;
-  font-size: 7px ;
+  font-size: 11px ;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   border: 1px solid rgba(19, 68, 46, 0.2);
@@ -499,3 +499,53 @@ app-header {
     }
   }
 }
+
+
+
+ #floatingRefresher {
+   position: absolute;
+   top: 50%;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   width: 70%;
+   height: 110px;
+   max-width: 400px;
+   background-color: #ffffff;
+   /* white background */
+   border-radius: 20px;
+   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+   z-index: 9999;
+   pointer-events: auto;
+   overflow: hidden;
+   border: 2px solid #13442e;
+   /* smooth pull animation */
+   transition: transform 0.2s ease, opacity 0.2s ease;
+ }
+
+ /* Target the inner refresher content */
+ #floatingRefresher ion-refresher-content {
+   --background: transparent;
+   /* already have outer white */
+   --pulling-icon-color: #0a2819;
+   --pulling-text-color: #0a2819;
+   --refreshing-spinner-color: #057e41;
+   --refreshing-text-color: #057e41;
+
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: center;
+   padding: 20px;
+   text-align: center;
+   width: 100%;
+   color:#057e41;
+   box-sizing: border-box;
+   font-weight: 900;
+
+ }
+
+ /* Optional: make icon/text fit nicely */
+ #floatingRefresher ion-refresher-content span,
+ #floatingRefresher ion-refresher-content ion-icon {
+   font-size: 1.2rem;
+ }

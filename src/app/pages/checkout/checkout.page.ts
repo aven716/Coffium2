@@ -61,7 +61,7 @@ interface OrderData {
         IonButton,
         IonIcon,
         IonFooter
-        
+
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     templateUrl: './checkout.page.html',
@@ -102,12 +102,22 @@ export class CheckoutPage implements OnInit, AfterViewInit {
         private loadingCtrl: LoadingController
     ) {
         addIcons({ locationOutline, cardOutline, cashOutline });
-      
+
 
     }
-    
+
 
     ngOnInit() {
+        // ⚡ 1️⃣ GCash deep link redirect: check URL query param first
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('order_id');
+        if (orderId) {
+            // If we have an order_id from GCash redirect, skip checkout and go straight to OrderPage
+            this.router.navigate(['/order', orderId]);
+            return; // stop initialization
+        }
+
+        // ⚡ 2️⃣ Normal checkout flow
         this.userId = Number(localStorage.getItem('user_id')) || 0;
 
         if (!this.userId) {
@@ -116,20 +126,34 @@ export class CheckoutPage implements OnInit, AfterViewInit {
             return;
         }
 
-        // Use bracket notation because state has index signature
+        // ⚡ 3️⃣ Handle navigation state from Cart page
         const navigation = this.router.getCurrentNavigation();
-        if (navigation?.extras.state && navigation.extras.state['orderId']) {
-            const orderId = navigation.extras.state['orderId'];
-            // Navigate directly to OrderPage, no polling needed
-            this.router.navigate(['/order', orderId]);
+        if (navigation?.extras?.state) {
+            if (navigation.extras.state['orderId']) {
+                const orderId = navigation.extras.state['orderId'];
+                this.router.navigate(['/order', orderId]);
+                return;
+            }
+
+            // 👇 preserve delivery option sent from Cart page
+            if (navigation.extras.state['deliveryOption']) {
+                this.deliveryOption = navigation.extras.state['deliveryOption'];
+
+                // Initialize Mapbox automatically if "delivery" was chosen
+                if (this.deliveryOption === 'delivery') {
+                    setTimeout(() => this.initMapbox(), 0);
+                }
+            }
         }
 
-
+        // Load user data and cart
         this.loadUserData();
         this.loadCart();
     }
 
-  
+
+
+
     loadCart(): Promise<void> {
         return new Promise((resolve, reject) => {
             this.http.get<any>(`${this.apiBaseUrl}get_cart.php?user_id=${this.userId}`)
@@ -295,18 +319,17 @@ export class CheckoutPage implements OnInit, AfterViewInit {
 
     async processGCashPayment(orderData: OrderData, loading: HTMLIonLoadingElement) {
         try {
+            // Use only the existing order_id
+            const orderId = localStorage.getItem('pending_order_id');
+
+            if (!orderId) {
+                await loading.dismiss();
+                this.showToast('No pending order found', 'danger');
+                return;
+            }
+
             const response: any = await this.http.post(`${this.apiBaseUrl}create_payment.php`, {
-                user_id: orderData.user_id,
-                first_name: orderData.first_name,
-                last_name: orderData.last_name,
-                contact_number: orderData.contact_number,
-                address: orderData.address,
-                delivery_option: orderData.delivery_option,
-                payment_method: 'gcash',
-                subtotal: orderData.subtotal,
-                delivery_fee: orderData.delivery_fee,
-                total_amount: orderData.total_amount,
-                items: orderData.items,
+                order_id: orderId,
                 amount: orderData.total_amount * 100,
                 description: `Order for ${orderData.first_name} ${orderData.last_name}`
             }).toPromise();
@@ -314,15 +337,13 @@ export class CheckoutPage implements OnInit, AfterViewInit {
             await loading.dismiss();
 
             if (response.success && response.checkout_url) {
-                // Open GCash checkout
                 window.open(response.checkout_url, '_blank');
-
-                // DO NOT navigate or create order again
                 this.showToast('Redirecting to GCash...', 'primary');
             } else {
                 console.error('❌ Payment creation failed:', response.message);
                 this.showToast('Failed to initiate payment', 'danger');
             }
+
         } catch (error) {
             await loading.dismiss();
             console.error('💥 Error in GCash payment:', error);
@@ -385,8 +406,8 @@ export class CheckoutPage implements OnInit, AfterViewInit {
 
     map!: mapboxgl.Map;
     geocoder!: MapboxGeocoder;
-mapMarker!: mapboxgl.Marker;
-    
+    mapMarker!: mapboxgl.Marker;
+
 
     ngAfterViewInit() {
         if (this.mapContainer && this.deliveryOption === 'delivery') {
@@ -441,6 +462,6 @@ mapMarker!: mapboxgl.Marker;
             }
         });
     }
-    
+
 
 }

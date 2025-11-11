@@ -23,7 +23,9 @@ import {
   IonCardContent,
   IonChip,
   ToastController,
-  IonToast
+  IonToast,
+  IonRefresher,
+  IonRefresherContent
 } from '@ionic/angular/standalone';
 
 // ✅ Other imports
@@ -62,7 +64,9 @@ import { AppHeaderComponent } from '../shared/app-header/app-header.component';
     IonToast,
 
     // ✅ Shared Component
-    AppHeaderComponent
+    AppHeaderComponent,
+    IonRefresher,
+    IonRefresherContent
   ],
 })
 export class HomePage {
@@ -408,6 +412,17 @@ toggleMenu() {
       queryParams: { buyNow: true }
     });
  
+  }
+  doRefresh(event: any) {
+    console.log('Refreshing...');
+    this.loadUserData(localStorage.getItem('user_id') || '');
+    this.loadProducts();
+    this.loadCategories();
+    this.loadPosters();
+
+    setTimeout(() => {
+      event.target.complete(); // stops the spinner
+    }, 1000); // you can adjust timing
   }
 
 

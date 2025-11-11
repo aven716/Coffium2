@@ -1,0 +1,78 @@
+<app-header></app-header>
+
+<ion-content class="orders-content">
+    <ion-refresher slot="fixed" (ionRefresh)="loadOrders($event)">
+        <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner-container">
+            <ion-spinner name="crescent"></ion-spinner>
+        </div>
+        <p>Loading your orders...</p>
+    </div>
+
+    <!-- Orders List -->
+    <div *ngIf="!isLoading && orders.length > 0" class="orders-container">
+        <div class="page-header">
+            <h1>My Orders</h1>
+            <p>{{ orders.length }} {{ orders.length === 1 ? 'order' : 'orders' }}</p>
+        </div>
+
+        <div class="orders-list">
+            <div *ngFor="let order of orders" class="order-card" (click)="openOrder(order.order_id)">
+                <!-- Order Header -->
+                <div class="order-header">
+                    <div class="order-number">
+                        <span class="label">Order</span>
+                        <span class="number">#{{ order.order_id }}</span>
+                    </div>
+                    <div class="order-badge"
+                        [class]="'badge-' + order.order_status.replace(' ', '-').replace('/', '-')">
+                        {{ order.order_status | titlecase }}
+                    </div>
+                </div>
+
+                <!-- Order Info -->
+                <div class="order-info">
+                    <div class="info-row">
+                        <ion-icon name="calendar-outline"></ion-icon>
+                        <span>{{ order.created_at | date: 'MMM d, y, h:mm a' }}</span>
+                    </div>
+                    <div class="info-row">
+                        <ion-icon name="card-outline"></ion-icon>
+                        <span>{{ order.payment_method | uppercase }}</span>
+                        <span class="payment-status" [class.paid]="order.payment_status === 'paid'">
+                            {{ order.payment_status | titlecase }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Order Total -->
+                <div class="order-footer">
+                    <div class="total-label">Total Amount</div>
+                    <div class="total-amount">₱{{ order.total_amount | number: '1.2-2' }}</div>
+                </div>
+
+                <!-- View Details Arrow -->
+                <div class="view-details">
+                    <span>View Details</span>
+                    <ion-icon name="chevron-forward-outline"></ion-icon>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && orders.length === 0" class="empty-state">
+        <div class="empty-icon">
+            <ion-icon name="receipt-outline"></ion-icon>
+        </div>
+        <h2>No Orders Yet</h2>
+        <p>Start shopping and your orders will appear here!</p>
+        <ion-button class="shop-now-btn" routerLink="/home">
+            Start Shopping
+        </ion-button>
+    </div>
+</ion-content>

@@ -1,10 +1,20 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { ToastController, IonContent, IonHeader, IonToolbar, IonTitle, IonList, IonItem, IonLabel } from '@ionic/angular/standalone';
+import { ToastController } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import {
+    IonContent,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonList,
+    IonItem,
+    IonLabel,
+    IonButton,
+    IonFooter
+} from '@ionic/angular/standalone';
 
 @Component({
     selector: 'app-order',
@@ -21,8 +31,11 @@ import { RouterModule } from '@angular/router';
         IonTitle,
         IonList,
         IonItem,
-        IonLabel
-    ]
+        IonLabel,
+        IonButton,
+        IonFooter
+    ],
+    schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class OrderPage implements OnInit {
 
@@ -47,25 +60,25 @@ export class OrderPage implements OnInit {
     }
 
     ngOnInit() {
-        const navigation = this.router.getCurrentNavigation();
-        let orderId: string | null = null;
+        // 1️⃣ Get order ID from route param (e.g., /order/:id)
+        let orderId = this.route.snapshot.paramMap.get('id');
 
-        // 1️⃣ Try router state first
-        if (navigation?.extras.state && navigation.extras.state['order']) {
-            this.order = navigation.extras.state['order'];
-            return;
-        }
-
-        // 2️⃣ Try route param
-        orderId = this.route.snapshot.paramMap.get('id');
-
-        // 3️⃣ Fallback to localStorage (GCash redirect)
+        // 2️⃣ If no route param, check localStorage (for GCash deep link)
         if (!orderId) {
             orderId = localStorage.getItem('pending_order_id');
-            localStorage.removeItem('pending_order_id'); // clean up
+            if (orderId) {
+                localStorage.removeItem('pending_order_id'); // cleanup
+            }
         }
 
-        // 4️⃣ Fetch order details
+        // 3️⃣ Fallback: check query param from deep link (coffium://home?order_id=XXX)
+        if (!orderId) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const param = urlParams.get('order_id');
+            if (param) orderId = param;
+        }
+
+        // 4️⃣ Fetch order from API if we have ID
         if (orderId) {
             this.fetchOrder(orderId);
         } else {
@@ -73,24 +86,41 @@ export class OrderPage implements OnInit {
         }
     }
 
-
-
-
     async fetchOrder(orderId: string | number) {
         try {
             const res: any = await this.http
                 .get(`${this.apiBaseUrl}get_order.php?order_id=${orderId}`)
                 .toPromise();
 
-            if (res.success && res.order) {
-                this.order = res.order;
+            if (res && res.success && res['order']) {
+                this.order = res['order'];
+
+                // Ensure totals are numbers
+                this.order.subtotal = Number(this.order.subtotal) || 0;
+                this.order.delivery_fee = Number(this.order.delivery_fee) || 0;
+                this.order.total_amount = Number(this.order.total_amount) || 0;
+
+                // Normalize item prices
+                this.order.items = (this.order.items || []).map((item: any) => ({
+                    ...item,
+                    unit_price: Number(item.unit_price) || 0,
+                    total_price: Number(item.total_price) || 0
+                }));
+
                 console.log('✅ Order fetched from API:', this.order);
             } else {
-                this.showToast('Order not found', 'warning');
+                this.showToast(res?.message || 'Order not found', 'warning');
             }
         } catch (err) {
-            console.error(err);
+            console.error('💥 Error fetching order:', err);
             this.showToast('Failed to load order', 'danger');
         }
+    }
+    getProductImage(filename: string) {
+        return filename ? `${this.apiBaseUrl}images/products/${filename}` : 'assets/images/default-product.png';
+    }
+
+    continueShopping() {
+        this.router.navigate(['/home']);
     }
 }
