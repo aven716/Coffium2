@@ -79,6 +79,11 @@
         <div class="product-card" (click)="openProduct(product)">
           <div class="product-image-container">
             <img [src]="getProductImage(product.picture)" [alt]="product.product_name">
+              <button class="wishlist-btn" (click)="toggleWishlist(product, $event)">
+                <ion-icon [name]="isInWishlist(product.product_id) ? 'heart' : 'heart-outline'"
+                  [class.active]="isInWishlist(product.product_id)">
+                </ion-icon>
+              </button>
             <div class="rating-badge" *ngIf="product.rating && product.rating > 0">
               <ion-icon name="star"></ion-icon>
               <span>{{ product.rating.toFixed(1) }}</span>

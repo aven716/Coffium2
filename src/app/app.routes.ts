@@ -77,6 +77,10 @@ export const routes: Routes = [
     path: 'orders',
     loadComponent: () => import('./pages/orders/orders.page').then(m => m.OrdersPage)
   },
+  {
+    path: 'wishlist',
+    loadComponent: () => import('./pages/wishlist/wishlist.page').then(m => m.WishlistPage)
+  },
 
 
 ];

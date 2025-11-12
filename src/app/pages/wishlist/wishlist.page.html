@@ -1,0 +1,48 @@
+
+<app-header></app-header>
+<ion-content class="wishlist-content">
+
+    <div class="section-container">
+        <h3 class="section-header">Your Wishlist</h3>
+
+        <ion-grid class="products-grid">
+            <ion-row>
+                <ion-col size="6" size-md="4" size-lg="3" *ngFor="let product of wishlistProducts">
+                    <div class="product-card" (click)="openProduct(product.product_id)">
+                        <div class="product-image-container">
+                            <img [src]="apiBaseUrl + 'images/products/' + product.picture" [alt]="product.product_name" />
+
+                            <button class="wishlist-btn" (click)="toggleWishlist(product.product_id, $event)">
+                                <ion-icon [name]="isInWishlist(product.product_id) ? 'heart' : 'heart-outline'"
+                                    [class.active]="isInWishlist(product.product_id)">
+                                </ion-icon>
+                            </button>
+
+                            <div class="rating-badge" *ngIf="product.rating && product.rating > 0">
+                                <ion-icon name="star"></ion-icon>
+                                <span>{{ product.rating.toFixed(1) }}</span>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <h4 class="product-name">{{ product.product_name }}</h4>
+                            <p class="product-price">₱{{ product.price | number:'1.2-2' }}</p>
+
+                            <div class="product-actions">
+                                <ion-button class="buy-btn"
+                                    (click)="openProduct(product.product_id); $event.stopPropagation()">
+                                    View
+                                </ion-button>
+                            </div>
+                        </div>
+                    </div>
+                </ion-col>
+            </ion-row>
+        </ion-grid>
+
+        <p *ngIf="wishlistProducts.length === 0" class="empty-message">
+            Your wishlist is empty. Start adding products you love!
+        </p>
+    </div>
+
+</ion-content>

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router';
 import { CartService } from '../services/cart.service';
+import { WishlistService } from '../services/wishlist.service';
 // ✅ Ionic Standalone Components
 import {
   IonItem,
@@ -103,7 +104,8 @@ export class HomePage {
     private toastCtrl: ToastController,
     private http: HttpClient,
     private router: Router,
-    private cartService: CartService
+    private cartService: CartService,
+    private wishlistService: WishlistService
   ) { }
   productBaseUrl = 'https://add2mart.shop/ionic/coffium/api/images/products/';
 
@@ -161,9 +163,13 @@ toggleMenu() {
 
     // ✅ If no user logged in, show welcome toast
     const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    if (userId) {
+      // Load wishlist
+      this.wishlistService.loadWishlist(+userId);
+    } else {
       this.showGuestToast();
     }
+    
   }
 
   async showGuestToast() {
@@ -193,7 +199,21 @@ toggleMenu() {
     await toast.present();
   }
 
+  async toggleWishlist(product: any, event: Event) {
+    event.stopPropagation(); // Prevent opening product page
 
+    if (!this.user.user_id) {
+      await this.showToast('Please log in to add to wishlist', 'warning');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    await this.wishlistService.toggleWishlist(this.user.user_id, product.product_id);
+  }
+
+  isInWishlist(productId: number): boolean {
+    return this.wishlistService.isInWishlist(productId);
+  }
   
 
   selectOption(option: string) {
