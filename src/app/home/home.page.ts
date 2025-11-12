@@ -5,6 +5,8 @@ import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router';
 import { CartService } from '../services/cart.service';
 import { WishlistService } from '../services/wishlist.service';
+import { Subscription } from 'rxjs';
+
 // ✅ Ionic Standalone Components
 import {
   IonItem,
@@ -118,9 +120,11 @@ export class HomePage {
     });
   }
 
-
+  goToProfile() {
+    this.router.navigate(['/profile']); // Redirect to Profile page
+  }
   goToFavorites() {
-    this.router.navigate(['/favorites']);
+    this.router.navigate(['/wishlist']);
   }
 
   goToCart() {
@@ -155,22 +159,28 @@ toggleMenu() {
         }
       }, err => console.error(err));
   }
+
+  wishlistSubscription!: Subscription;
+  wishlistProductIds: Set<number> = new Set();
+
   ngOnInit() {
     this.waitForUserId();
     this.loadPosters();
     this.loadCategories();
     this.loadProducts();
 
-    // ✅ If no user logged in, show welcome toast
-    const userId = localStorage.getItem('user_id');
+    const userId = Number(localStorage.getItem('user_id'));
     if (userId) {
-      // Load wishlist
-      this.wishlistService.loadWishlist(+userId);
-    } else {
-      this.showGuestToast();
+      this.wishlistService.loadWishlist(userId); // load from API
+
+      // 🔹 subscribe to wishlist changes
+      this.wishlistSubscription = this.wishlistService.wishlistItems$.subscribe(ids => {
+        this.wishlistProductIds = ids;
+      });
     }
     
   }
+
 
   async showGuestToast() {
     const toast = await this.toastCtrl.create({

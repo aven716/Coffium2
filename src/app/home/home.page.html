@@ -3,7 +3,7 @@
 
   
     <app-header [showSearchbar]="true" [showIcons]="true" (toggleMenu)="onHeaderToggleMenu()">
-      <ion-item lines="none" button (click)="toggleMenu()" class="user-bar">
+    <ion-item lines="none" button (click)="goToProfile()" class="user-bar">
         <ion-avatar slot="start">
           <img [src]="user.profile_image" alt="Profile" />
         </ion-avatar>
@@ -80,9 +80,9 @@
           <div class="product-image-container">
             <img [src]="getProductImage(product.picture)" [alt]="product.product_name">
               <button class="wishlist-btn" (click)="toggleWishlist(product, $event)">
-                <ion-icon [name]="isInWishlist(product.product_id) ? 'heart' : 'heart-outline'"
-                  [class.active]="isInWishlist(product.product_id)">
-                </ion-icon>
+            <ion-icon slot="icon-only" name="heart" [color]="isInWishlist(product.product_id) ? 'danger' : 'medium'"
+              (click)="toggleWishlist(product, $event)">
+            </ion-icon>
               </button>
             <div class="rating-badge" *ngIf="product.rating && product.rating > 0">
               <ion-icon name="star"></ion-icon>
@@ -118,6 +118,11 @@
         <div class="product-card" (click)="openProduct(product)">
           <div class="product-image-container">
             <img [src]="getProductImage(product.picture)" [alt]="product.product_name">
+            <button class="wishlist-btn" (click)="toggleWishlist(product, $event)">
+    <ion-icon slot="icon-only" name="heart" [color]="isInWishlist(product.product_id) ? 'danger' : 'medium'"
+      (click)="toggleWishlist(product, $event)">
+    </ion-icon>
+            </button>
             <div class="rating-badge" *ngIf="product.rating && product.rating > 0">
               <ion-icon name="star"></ion-icon>
               <span>{{ product.rating.toFixed(1) }}</span>

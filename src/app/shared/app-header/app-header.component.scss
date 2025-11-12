@@ -1,124 +1,317 @@
-/* ================= Header Toolbar ================= */
+// Header Colors
+$header-bg: linear-gradient(135deg, #35593E 0%, #2D4739 100%);
+$search-bg: rgba(255, 255, 255, 0.15);
+$search-active-bg: white;
+$text-color: white;
 
-
+// Header Toolbar
 ion-toolbar.header-toolbar {
-    
-    --min-height: 56px;
-    padding: 0 10px;
+    --background: transparent;
+    --min-height: 60px;
+    background: $header-bg;
+    padding: 0;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+// Header Container
+.header-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    width: 100%;
+    position: relative;
+}
+
+// Menu Button - Always visible
+.menu-btn {
+    flex-shrink: 0;
+    z-index: 10; // Ensure it's always on top
+
+    ion-menu-button {
+        color: $text-color;
+        --color: #{$text-color};
+    }
+}
+
+// Logo
+.logo {
+    flex-shrink: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+    transform: translateX(0);
+
+    &.hidden {
+        opacity: 0;
+        transform: translateX(-20px);
+        pointer-events: none;
+        width: 0;
+        overflow: hidden;
+        margin: 0;
+    }
+
+    ion-button {
+        --color: #{$text-color};
+        --padding-start: 4px;
+        --padding-end: 4px;
+        margin: 0;
+
+        h3 {
+            color: $text-color;
+            font-weight: 700;
+            font-size: 20px;
+            margin: 0;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+    }
+}
+
+// Search Section
+.search-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    position: relative;
+    min-width: 0; // Allow flexbox to shrink properly
+
+    &.active {
+        justify-content: stretch;
+    }
+}
+
+// Search Input Wrapper
+.search-input-wrapper {
+    display: none; // Hidden by default
+    align-items: center;
+    background: $search-active-bg;
+    border-radius: 24px;
+    padding: 0 12px;
+    height: 40px;
+    width: 0;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid rgba(53, 89, 62, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+
+    &.expanded {
+        display: flex;
+        width: 100%;
+        opacity: 1;
+    }
+
+    .search-icon {
+        color: #35593E;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .search-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #2D4739;
+        font-size: 14px;
+        padding: 0 8px;
+        font-family: inherit;
+        min-width: 0; // Allow input to shrink
+
+        &::placeholder {
+            color: #999;
+        }
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    .clear-btn {
+        background: none;
+        border: none;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #999;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+
+        ion-icon {
+            font-size: 18px;
+        }
+
+        &:active {
+            transform: scale(0.9);
+            color: #35593E;
+        }
+    }
+}
+
+// Search Trigger Button
+.search-trigger-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    --background: linear-gradient(to bottom, #35593E, #2D4739);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+
+    ion-icon {
+        font-size: 20px;
+        color: $text-color;
+    }
+
+    &:active {
+        transform: scale(0.95);
+        background: rgba(255, 255, 255, 0.25);
+    }
 }
 
-/* Wrapper for menu + search */
-.header-flex {
-    display: flex;
-    align-items: center;
-    /* ✅ vertically centers both */
-    width: 100%;
+// Search Results Overlay
+.search-results-overlay {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    animation: fadeIn 0.2s ease;
+    overflow-y: auto;
+    padding: 8px;
 }
 
-/* Menu button styling */
-.header-flex ion-buttons {
-    display: flex;
-    align-items: center;
-    margin-right: 8px;
-    color: white;
-}
-
-/* Searchbar styling */
-.header-flex ion-searchbar {
-    flex: 1;
-    --height: 40px;
-    --border-radius: 8px;
-    --background: #3e443d;
-    --box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-    margin: 0;
-    color: grey;
-    align-self: center;
-}
-
-/* ================= User Info Bar ================= */
-
-/* ================= Search Bar & Dropdown ================= */
-ion-searchbar {
-    margin: 10px 15px;
-    border-radius: 10px;
-   
-    --box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-    --placeholder-color: #777;
-    --color: #13442e;
-    z-index: 10;
-    /* keeps above background */
-}
-
-/* Wrap searchbar and results together */
-.search-wrapper {
-    position: relative;
-    display: block;
-    width: 100%;
-    padding: 0 15px;
-    height: fit-content;
-}
-
-/* Dropdown container */
+// Search Results
 .search-results {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: slideDown 0.2s ease;
+    max-width: 600px;
+    margin: 0 auto;
+
+    .results-header {
+        padding: 12px 16px;
+        background: linear-gradient(135deg, #35593E 0%, #2D4739 100%);
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.3px;
+    }
+
+    ion-list {
+        background: transparent;
+        padding: 0;
+    }
+
+    ion-item {
+        --background: white;
+        --padding-start: 12px;
+        --padding-end: 12px;
+        --inner-padding-end: 8px;
+        --border-color: #f0f0f0;
+        --min-height: 70px;
+        transition: all 0.2s ease;
+
+        &:hover {
+            --background: #f8f9fa;
+        }
+
+        &:active {
+            --background: #e9ecef;
+        }
+
+        ion-thumbnail {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-right: 12px;
+            flex-shrink: 0;
+
+            img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+        }
+
+        ion-label {
+            margin: 0;
+
+            h2 {
+                font-size: 14px;
+                font-weight: 600;
+                color: #2D4739;
+                margin: 0 0 4px 0;
+                line-height: 1.3;
+                // Allow wrapping for long names
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+            }
+
+            .price {
+                font-size: 13px;
+                font-weight: 700;
+                color: #35593E;
+                margin: 0;
+            }
+        }
+
+        ion-icon[slot="end"] {
+            color: #999;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+    }
+}
+
+// Loading State
+.search-loading {
     position: absolute;
     top: 60px;
-    /* directly below searchbar */
-    left: 15px;
-    right: 15px;
-    background: #000000;
-    border-radius: 10px;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-    z-index: 99;
-    max-height: 300px;
-    overflow-y: auto;
-    border: 1px solid rgba(19, 68, 46, 0.2);
-    animation: fadeIn 0.2s ease-in-out;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+
+    ion-spinner {
+        --color: #35593E;
+        width: 24px;
+        height: 24px;
+    }
 }
 
-/* Result list items */
-.search-results ion-item {
-    --background: transparent;
-    --inner-padding-end: 10px;
-    transition: background-color 0.2s ease-in-out;
-}
-
-.search-results ion-item:hover {
-    --background: rgba(19, 68, 46, 0.05);
-}
-
-.search-results ion-thumbnail img {
-    border-radius: 8px;
-    object-fit: cover;
-}
-
-.search-results h2 {
-    font-size: 0.95rem;
-    color: #13442e;
-    margin: 0;
-}
-
-.search-results p {
-    font-size: 0.85rem;
-    color: #555;
-    margin: 2px 0 0;
-}
-
-/* Spinner when searching */
-ion-spinner {
-    display: block;
-    margin: 10px auto;
-    color: #13442e;
-}
-
-/* Subtle dropdown animation */
+// Animations
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
     }
 
     to {
@@ -127,180 +320,101 @@ ion-spinner {
     }
 }
 
-.search-wrapper {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    /* centers horizontally */
-    width: 100%;
-    padding: 0;
-    /* remove left/right padding */
+// Responsive Design
+@media (max-width: 576px) {
+    .header-container {
+        gap: 6px;
+        padding: 6px 8px;
+    }
+
+    .logo ion-button h3 {
+        font-size: 18px;
+    }
+
+    .search-input-wrapper {
+        height: 38px;
+        padding: 0 10px;
+
+        .search-input {
+            font-size: 13px;
+            padding: 0 6px;
+        }
+
+        .search-icon,
+        .clear-btn ion-icon {
+            font-size: 16px;
+        }
+    }
+
+    .search-trigger-btn {
+        width: 38px;
+        height: 38px;
+
+        ion-icon {
+            font-size: 18px;
+        }
+    }
+
+    .search-results {
+        border-radius: 8px;
+
+        .results-header {
+            padding: 10px 12px;
+            font-size: 13px;
+        }
+
+        ion-item {
+            --padding-start: 10px;
+            --padding-end: 10px;
+            --min-height: 65px;
+
+            ion-thumbnail {
+                width: 45px;
+                height: 45px;
+                margin-right: 10px;
+            }
+
+            ion-label h2 {
+                font-size: 13px;
+            }
+
+            ion-label .price {
+                font-size: 12px;
+            }
+
+            ion-icon[slot="end"] {
+                font-size: 16px;
+            }
+        }
+    }
 }
 
-/* Searchbar */
-ion-searchbar {
-    width: 90%;
-    /* adjust width as needed */
-    max-width: 500px;
-    /* optional max width */
-    border-radius: 10px;
-    --box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-    --placeholder-color: #777;
-    --color: #13442e;
-    z-index: 10;
-}
+// Very small screens (like Galaxy A series)
+@media (max-width: 360px) {
+    .header-container {
+        gap: 4px;
+        padding: 6px;
+    }
 
-/* Dropdown container aligns with searchbar */
-.search-results {
-    top: 60px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 500px;
-    background: #000000;
-    border-radius: 10px;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-    z-index: 99;
-    max-height: 300px;
-    overflow-y: auto;
-    border: 1px solid rgba(19, 68, 46, 0.2);
-    animation: fadeIn 0.2s ease-in-out;
-}
+    .logo ion-button h3 {
+        font-size: 16px;
+    }
 
-.user-bar ion-avatar {
-    width: 45px;
-    /* fixed size */
-    height: 45px;
-    /* fixed size */
-    border-radius: 50%;
-    /* makes it circular */
-    overflow: hidden;
-    /* ensures image doesn't spill out */
-}
+    .search-input-wrapper {
+        height: 36px;
+        padding: 0 8px;
 
-.user-bar ion-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    /* crops image to fill the container without stretching */
-    display: block;
-    /* removes default inline spacing */
-}
+        .search-input {
+            font-size: 12px;
+        }
+    }
 
-/* Center everything inside the toolbar vertically */
-.header-flex ion-searchbar {
-    flex: none;
-    width: 70%;
-        /* adjust this percentage as you like (e.g. 60%, 80%) */
-        max-width: 400px;
-    --height: 36px;
-    /* shorter, fits toolbar height */
-    height: 36px;
-    /* ensure the host matches */
-color: white;
-    margin: 0;
-    padding: 0;
-    align-self: center;
-    /* vertically center it */
-    --border-radius: 8px;
-    --background: #4c914f41;
-    --box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-}
+    .search-trigger-btn {
+        width: 36px;
+        height: 36px;
 
-/* remove extra inner padding */
-.header-flex ion-searchbar::part(container) {
-    padding-top: 0;
-    padding-bottom: 0;
-    display: flex;
-    align-items: center;
-}
-
-/* make sure toolbar doesn't add vertical offset */
-ion-toolbar.header-toolbar::part(container),
-ion-toolbar.header-toolbar::part(content) {
-    display: flex;
-    align-items: center;
-}
-
-.header-flex>div {
-    display: flex;
-    align-items: center;
-    /* ✅ vertically centers “Coffium” */
-    margin-right: 10px;
-}
-
-.header-flex h3 {
-    color: white;
-    font-weight: 600;
-    font-size: 1.1rem;
-    margin: 0;
-}
-
-/* === Right-aligned search with expand animation === */
-.search-container {
-    display: flex;
-    align-items: center;
-    position: absolute;
-    right: 10px;
-    transition: all 0.3s ease;
-}
-
-/* Hidden by default */
-.collapsible-search {
-    width: 0;
-    opacity: 0;
-    overflow: hidden;
-    transform: scaleX(0);
-    transform-origin: right center;
-    /* expands from right → left */
-    transition:
-        transform 0.3s ease,
-        opacity 0.3s ease,
-        width 0.3s ease;
-}
-
-/* Expanded state */
-.search-container.expanded .collapsible-search {
-    width: 180px;
-    /* adjust as you wish */
-    opacity: 1;
-    transform: scaleX(1);
-}
-
-/* Search icon styling */
-.search-container ion-button {
-    --color: white;
-    margin-left: 6px;
-}
-
-/* Optional: refine searchbar appearance */
-.collapsible-search ion-searchbar {
-    --background: #fff;
-    --color: #13442e;
-    --border-radius: 8px;
-    height: 36px;
-    width: 100%;
-    transition: all 0.3s ease;
-}
-
-ion-menu-button{
-    color: white;
-}
-
-ion-header,
-ion-toolbar.header-toolbar {
-    --box-shadow: none;
-    /* removes shadow */
-    --border-width: 0;
-    /* removes bottom border if any */
-    box-shadow: none !important;
-    /* fallback */
-    border-bottom: none !important;
-    /* fallback */
-}
-
-ion-card,
-ion-item {
-    --box-shadow: none;
-    box-shadow: none !important;
+        ion-icon {
+            font-size: 16px;
+        }
+    }
 }

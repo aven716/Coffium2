@@ -10,7 +10,7 @@ import { addIcons } from 'ionicons';
 import { cart, menu, heart, star, cartOutline, searchOutline, search, 
   logOutOutline, personOutline,listOutline, 
   helpCircleOutline, informationCircleOutline, heartOutline, receiptOutline, chevronDown, chevronUp
-, settingsOutline, bagOutline,homeOutline } from 'ionicons/icons';
+, settingsOutline, bagOutline,homeOutline, callOutline } from 'ionicons/icons';
 import { h } from 'ionicons/dist/types/stencil-public-runtime';
 import { App } from '@capacitor/app';
 import { ChangeDetectorRef } from '@angular/core';
@@ -77,7 +77,7 @@ export class AppComponent implements OnInit {
     addIcons({
       cart, menu, heart, star, cartOutline, searchOutline, search, logOutOutline, personOutline,
       listOutline, helpCircleOutline, informationCircleOutline, heartOutline, receiptOutline,
-      chevronDown, chevronUp, settingsOutline, bagOutline, homeOutline
+      chevronDown, chevronUp, settingsOutline, bagOutline, homeOutline, callOutline
     });
 
     const userId = localStorage.getItem('user_id');

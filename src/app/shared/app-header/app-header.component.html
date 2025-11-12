@@ -1,61 +1,80 @@
-
-
 <ion-header>
   <ion-toolbar class="header-toolbar">
-    <div class="header-flex">
-      <!-- Menu button -->
-      <ion-buttons slot="start">
-        <ion-menu-button>
-        </ion-menu-button>
+    <div class="header-container">
+      <!-- Menu Button - Always visible -->
+      <ion-buttons slot="start" class="menu-btn">
+        <ion-menu-button></ion-menu-button>
       </ion-buttons>
 
-      <!-- Logo -->
-<!-- Logo -->
-<div class="logo">
-  <ion-button fill="clear" routerLink="/home" detail="false">
-    <h3>Coffium</h3>
-  </ion-button>
-</div>
-
-      <!-- Collapsible search -->
-      <div class="search-container" [class.expanded]="searchExpanded">
-        <div class="collapsible-search">
-          <ion-searchbar
-            [(ngModel)]="searchQuery"
-            placeholder="Search..."
-            (ionInput)="onSearchChange($event)">
-          </ion-searchbar>
-        </div>
-        <ion-button fill="clear" (click)="toggleSearch()">
-          <ion-icon name="search"></ion-icon>
+      <!-- Logo (hidden when search is active) -->
+      <div class="logo" [class.hidden]="searchActive">
+        <ion-button fill="clear" routerLink="/home" detail="false">
+          <h3>Coffium</h3>
         </ion-button>
+      </div>
+
+      <!-- Search Section -->
+      <div class="search-section" [class.active]="searchActive">
+        <!-- Search Input (shown when active) -->
+        <div class="search-input-wrapper" [class.expanded]="searchActive">
+          <ion-icon name="search" class="search-icon"></ion-icon>
+          <input #searchInput type="text" class="search-input" [(ngModel)]="searchQuery"
+            (input)="onSearchChange($event)" (focus)="searchActive = true" (blur)="onSearchBlur()"
+            placeholder="Search coffee, snacks..." />
+          <button *ngIf="searchQuery" class="clear-btn" (click)="clearSearch()">
+            <ion-icon name="close-circle"></ion-icon>
+          </button>
+        </div>
+
+        <!-- Search Icon Button (shown when NOT active) -->
+        <button *ngIf="!searchActive" class="search-trigger-btn" (click)="activateSearch()">
+          <ion-icon name="search"></ion-icon>
+        </button>
       </div>
     </div>
   </ion-toolbar>
 
-
-
-  <!-- Search Results -->
-  <div *ngIf="searchResults.length > 0" class="search-results">
-    <ion-list>
-      <ion-item
-        button
-        *ngFor="let product of searchResults"
-        (click)="openProduct(product)">
-        <ion-thumbnail slot="start">
-          <img [src]="'https://add2mart.shop/ionic/coffium/api/images/products/' + product.picture" />
-        </ion-thumbnail>
-        <ion-label>
-          <h2>{{ product.name }}</h2>
-          <p>₱{{ product.price }}</p>
-        </ion-label>
-      </ion-item>
-    </ion-list>
+  <!-- Search Results Dropdown -->
+  <div *ngIf="searchResults.length > 0 && searchActive" class="search-results-overlay" (click)="clearSearch()">
+    <div class="search-results" (click)="$event.stopPropagation()">
+      <div class="results-header">
+        <span>Found {{ searchResults.length }} {{ searchResults.length === 1 ? 'product' : 'products' }}</span>
+      </div>
+      <ion-list>
+        <ion-item button *ngFor="let product of searchResults" (click)="openProduct(product)">
+          <ion-thumbnail slot="start">
+            <img [src]="'https://add2mart.shop/ionic/coffium/api/images/products/' + product.picture"
+              [alt]="product.name" onerror="this.src='assets/images/default-product.png'" />
+          </ion-thumbnail>
+          <ion-label>
+          <h2>{{ product.name || product.product_name }}</h2>
+            <p class="price">₱{{ product.price }}</p>
+          </ion-label>
+          <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+        </ion-item>
+      </ion-list>
+    </div>
   </div>
 
-  <ion-spinner *ngIf="searching"></ion-spinner>
+  <!-- No Results Message -->
+  <div *ngIf="searchResults.length === 0 && searchQuery.length >= 2 && !searching && searchActive"
+    class="search-results-overlay" (click)="clearSearch()">
+    <div class="search-results" (click)="$event.stopPropagation()">
+      <div class="results-header">
+        <span>No products found</span>
+      </div>
+      <div style="padding: 20px; text-align: center; color: #666;">
+        <ion-icon name="search-outline" style="font-size: 48px; opacity: 0.3;"></ion-icon>
+        <p style="margin-top: 12px;">No results for "{{ searchQuery }}"</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="searching" class="search-loading">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <!-- Content Slot -->
   <ng-content></ng-content>
 </ion-header>
-
-<!-- User bar -->
-

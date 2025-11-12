@@ -81,6 +81,8 @@ export const routes: Routes = [
     path: 'wishlist',
     loadComponent: () => import('./pages/wishlist/wishlist.page').then(m => m.WishlistPage)
   },
+  { path: 'contact-us',
+    loadComponent:() => import('./pages/contact-us/contact-us.page').then(m => m.ContactUsPage) },
 
 
 ];

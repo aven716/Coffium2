@@ -23,17 +23,16 @@ export class WishlistService {
             .subscribe({
                 next: (res) => {
                     if (res.success && res.wishlist) {
-                        const productIds = new Set<number>(res.wishlist.map((item: any) => Number(item.product_id)));
+                        const productIds = new Set<number>(
+                            res.wishlist.map((item: any) => Number(item.product_id))
+                        );
                         this.wishlistItems.next(productIds);
                     }
                 },
-                error: (err) => {
-                    console.error('Error loading wishlist:', err);
-                }
+                error: (err) => console.error('Error loading wishlist:', err)
             });
     }
 
-    // Check if product is in wishlist
     isInWishlist(productId: number): boolean {
         return this.wishlistItems.value.has(productId);
     }

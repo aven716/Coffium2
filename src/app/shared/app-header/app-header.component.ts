@@ -1,9 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MenuController, ToastController } from '@ionic/angular';
-import {IonIcon, IonInput, IonList, IonItem, IonLabel, IonAvatar, IonCard, 
+import {
+  IonIcon, IonInput, IonList, IonItem, IonLabel, IonAvatar, IonCard,
   IonCardHeader, IonContent, IonSearchbar, IonHeader, IonToolbar, IonMenuButton, IonButtons, IonSpinner, IonThumbnail, IonButton
- } from '@ionic/angular/standalone';
+} from '@ionic/angular/standalone';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -11,13 +12,11 @@ import { EventEmitter, Output } from '@angular/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Platform } from '@ionic/angular';
 
-
-
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonHeader, IonToolbar, IonMenuButton, IonButtons, 
-    IonIcon, IonInput, IonList, IonItem, IonLabel, IonAvatar, IonCard, IonCardHeader, IonContent, 
+  imports: [CommonModule, FormsModule, IonHeader, IonToolbar, IonMenuButton, IonButtons,
+    IonIcon, IonInput, IonList, IonItem, IonLabel, IonAvatar, IonCard, IonCardHeader, IonContent,
     IonSearchbar, IonSpinner, IonThumbnail, IonButton],
   templateUrl: './app-header.component.html',
   styleUrls: ['./app-header.component.scss']
@@ -39,6 +38,8 @@ export class AppHeaderComponent implements OnInit {
   searchQuery: string = '';
   searchResults: any[] = [];
   searching: boolean = false;
+  searchExpanded = false;
+  searchActive = false; // NEW: Track if search is active
 
   constructor(
     private http: HttpClient,
@@ -58,13 +59,12 @@ export class AppHeaderComponent implements OnInit {
         console.warn('StatusBar plugin not available', err);
       }
     });
-    
+
     const userId = localStorage.getItem('user_id');
     if (userId) {
       this.loadUserData(userId);
     }
   }
-
 
   toggleSidebar() {
     console.log('Header click - emitting toggleMenu');
@@ -89,25 +89,25 @@ export class AppHeaderComponent implements OnInit {
       }, err => console.error('User fetch error:', err));
   }
 
-
   async showToast(message: string, color: string) {
     const toast = await this.toastCtrl.create({ message, duration: 1500, color });
     await toast.present();
   }
 
-  /** 🔍 Search for products matching the query */
+  /** 🔍 Updated: Search for products matching the query */
   onSearchChange(event: any) {
-    const query = event.detail.value.trim();
-    this.searchQuery = query;
+    // Handle both ion-searchbar and regular input
+    const query = event.detail?.value || event.target?.value || '';
+    this.searchQuery = query.trim();
 
-    if (query.length < 2) {
+    if (this.searchQuery.length < 2) {
       this.searchResults = [];
       return;
     }
 
     this.searching = true;
     this.http
-      .get(`https://add2mart.shop/ionic/coffium/api/search_products.php?query=${encodeURIComponent(query)}`)
+      .get(`https://add2mart.shop/ionic/coffium/api/search_products.php?query=${encodeURIComponent(this.searchQuery)}`)
       .subscribe(
         (res: any) => {
           this.searching = false;
@@ -115,7 +115,6 @@ export class AppHeaderComponent implements OnInit {
             this.searchResults = res.products;
           } else {
             this.searchResults = [];
-            this.showToast('No products found', 'medium');
           }
         },
         err => {
@@ -129,6 +128,7 @@ export class AppHeaderComponent implements OnInit {
   /** 📦 Navigate to the product page */
   openProduct(product: any) {
     this.router.navigate(['/product', product.product_id]);
+    this.clearSearch(); // Clear after navigation
   }
 
   goToFavorites() {
@@ -139,13 +139,47 @@ export class AppHeaderComponent implements OnInit {
     this.router.navigate(['/cart']);
   }
 
-
+  /** UPDATED: Toggle search expansion */
   toggleSearch() {
+    this.searchActive = !this.searchActive;
     this.searchExpanded = !this.searchExpanded;
+
+    // Focus input after animation
+    if (this.searchActive) {
+      setTimeout(() => {
+        const input = document.querySelector('.search-input') as HTMLInputElement;
+        if (input) input.focus();
+      }, 100);
+    }
   }
-  searchExpanded = false;
+  activateSearch() {
+    this.searchActive = true;
+    this.searchExpanded = true;
 
+    // Focus input after animation
+    setTimeout(() => {
+      const input = document.querySelector('.search-input') as HTMLInputElement;
+      if (input) input.focus();
+    }, 100);
+  }
 
+  /** NEW: Clear search and reset state */
+  clearSearch() {
+    this.searchQuery = '';
+    this.searchResults = [];
+    this.searchActive = false;
+    this.searchExpanded = false;
+  }
 
-
+  /** NEW: Handle search blur */
+  onSearchBlur() {
+    // Delay to allow clicking on results
+    setTimeout(() => {
+      if (!this.searchQuery) {
+        this.searchActive = false;
+        this.searchExpanded = false;
+        this.searchResults = [];
+      }
+    }, 200);
+  }
 }

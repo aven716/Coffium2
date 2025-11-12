@@ -13,9 +13,9 @@
                             <img [src]="apiBaseUrl + 'images/products/' + product.picture" [alt]="product.product_name" />
 
                             <button class="wishlist-btn" (click)="toggleWishlist(product.product_id, $event)">
-                                <ion-icon [name]="isInWishlist(product.product_id) ? 'heart' : 'heart-outline'"
-                                    [class.active]="isInWishlist(product.product_id)">
-                                </ion-icon>
+                            <ion-icon [name]="isInWishlist(product.product_id) ? 'heart' : 'heart-outline'" color="danger"
+                                (click)="toggleWishlist(product.product_id, $event)">
+                            </ion-icon>
                             </button>
 
                             <div class="rating-badge" *ngIf="product.rating && product.rating > 0">

@@ -57,8 +57,18 @@ export class WishlistPage implements OnInit {
             return;
         }
 
+        // Load wishlist into local service state
+        this.wishlistService.loadWishlist(this.userId);
+
+        // Load full wishlist products for display
         this.loadWishlist();
+
+        // Optional: auto-update UI when wishlist changes
+        this.wishlistService.wishlistItems$.subscribe(() => {
+            // just trigger change detection if needed
+        });
     }
+
 
     loadWishlist() {
         this.wishlistService.getWishlistWithProducts(this.userId).subscribe({
