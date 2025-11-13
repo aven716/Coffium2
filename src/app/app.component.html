@@ -11,9 +11,10 @@
     <div class="menu-banner">
       <img class="banner-bg" src="assets/images/sidebarbanner.png" alt="Banner" />
       <div class="user-info">
-        <ion-avatar>
-          <img [src]="user.profile_image" alt="Profile" />
-        </ion-avatar>
+      <ion-avatar slot="start">
+        <img [src]="user.profile_image || 'assets/images/default-profile.png'"
+          (error)="user.profile_image='assets/images/default-profile.png'" alt="Profile" />
+      </ion-avatar>
         <div class="user-text">
           <h2>{{ user.first_name }} {{ user.last_name }}</h2>
           <p>{{ user.email }}</p>

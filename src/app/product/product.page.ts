@@ -1,16 +1,17 @@
 import { Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import {  MenuController, ToastController, } from '@ionic/angular';
+import { MenuController, ToastController } from '@ionic/angular';
 import { IonToast, IonTextarea, IonButton, IonIcon, IonSpinner, IonContent } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppHeaderComponent } from '../shared/app-header/app-header.component';
+import { CheckoutService } from '../services/checkout.service'; // 👈 Import the service
 
 @Component({
   selector: 'app-product',
   standalone: true,
-  imports: [ IonContent, CommonModule, FormsModule, AppHeaderComponent, IonToast, IonTextarea, IonButton, IonIcon, IonSpinner],
+  imports: [IonContent, CommonModule, FormsModule, AppHeaderComponent, IonToast, IonTextarea, IonButton, IonIcon, IonSpinner],
   templateUrl: './product.page.html',
   styleUrls: ['./product.page.scss']
 })
@@ -20,7 +21,7 @@ export class ProductPage {
   productBaseUrl = 'https://add2mart.shop/ionic/coffium/api/images/products/';
   quantity: number = 1;
 
-  // --- User object, similar to HomePage
+  // --- User object
   user: {
     user_id: number;
     first_name: string;
@@ -38,27 +39,27 @@ export class ProductPage {
   // --- For review submission
   newRating: number = 0;
   newComment: string = '';
+  selectedOption: string = '';
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router, // 👈 Add Router
     private http: HttpClient,
     private menu: MenuController,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private checkoutService: CheckoutService // 👈 Inject CheckoutService
   ) { }
 
-  selectedOption: string = ''; // will hold size or pieces
-
-
   isDrink(): boolean {
-    return this.product && this.product.size === 'coffee'; // or some flag from DB
+    return this.product && this.product.size === 'coffee';
   }
-  // --- Set option when user clicks
+
   selectOption(option: string) {
     this.selectedOption = option;
   }
 
   ngOnInit() {
-    // Get user_id from localStorage like in HomePage
+    // Get user_id from localStorage
     const userId = localStorage.getItem('user_id');
     if (userId) this.user.user_id = +userId;
 
@@ -75,14 +76,19 @@ export class ProductPage {
     return filename ? this.productBaseUrl + filename : 'assets/images/default-product.png';
   }
 
-  // --- Quantity
-  increaseQuantity() { this.quantity++; }
-  decreaseQuantity() { if (this.quantity > 1) this.quantity--; }
+  increaseQuantity() {
+    this.quantity++;
+  }
+
+  decreaseQuantity() {
+    if (this.quantity > 1) this.quantity--;
+  }
 
   // --- Add to cart
   addToCart(product: any, quantity: number) {
     if (!this.user.user_id) {
       this.showToast('Please log in first', 'danger');
+      this.router.navigate(['/login']);
       return;
     }
 
@@ -101,10 +107,41 @@ export class ProductPage {
 
     this.http.post('https://add2mart.shop/ionic/coffium/api/add_to_cart.php', payload)
       .subscribe(
-        (res: any) => this.showToast(res.message || 'Added to cart', 'success'),
-        err => this.showToast('Failed to add to cart', 'danger')
+        (res: any) => {
+          if (res.success) {
+            this.showToast(res.message || 'Added to cart', 'success');
+          } else {
+            this.showToast(res.message || 'Failed to add to cart', 'danger');
+          }
+        },
+        err => {
+          console.error('Add to cart error:', err);
+          this.showToast('Failed to add to cart', 'danger');
+        }
       );
   }
+
+  // 🛒 NEW: Buy Now Function
+  buyNow(product: any, quantity: number) {
+    if (!this.user.user_id) {
+      this.showToast('Please log in first', 'warning');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    if (!this.selectedOption) {
+      this.showToast('Please select a size or pieces', 'warning');
+      return;
+    }
+
+    // Set Buy Now item using the service
+    this.checkoutService.setBuyNowItem(product, quantity, this.selectedOption);
+
+    // Navigate to checkout page
+    this.router.navigate(['/checkout']);
+    this.showToast('Proceeding to checkout...', 'primary');
+  }
+
   // --- Submit review
   submitReview() {
     if (!this.user.user_id) {
@@ -121,7 +158,6 @@ export class ProductPage {
       product_id: this.product.product_id,
       rating: this.newRating,
       comment: this.newComment.trim()
-      
     };
 
     this.http.post('https://add2mart.shop/ionic/coffium/api/submit_review.php', payload)
@@ -129,7 +165,7 @@ export class ProductPage {
         (res: any) => {
           if (res.success) {
             this.showToast('Review submitted', 'success');
-            this.loadProduct(); // refresh product to show new review
+            this.loadProduct();
             this.newRating = 0;
             this.newComment = '';
           } else {
@@ -140,7 +176,7 @@ export class ProductPage {
       );
   }
 
-  // --- Load product with reviews and ratings
+  // --- Load product
   loadProduct() {
     const url = `https://add2mart.shop/ionic/coffium/api/get_product_details.php?product_id=${this.productId}`;
 
@@ -151,11 +187,9 @@ export class ProductPage {
           this.product.rating = res.rating?.average || 0;
           this.product.totalRatings = res.rating?.total || 0;
           this.product.comments = res.comments || [];
-
-          // --- set product options dynamically
           this.product.options = res.options || [];
 
-          // Optionally preselect the first option
+          // Preselect the first option if available
           if (this.product.options.length > 0) {
             this.selectedOption = this.product.options[0].option_name;
           }
@@ -166,7 +200,6 @@ export class ProductPage {
       err => console.error('Error loading product:', err)
     );
   }
-
 
   async showToast(message: string, color: string) {
     const toast = await this.toastCtrl.create({ message, duration: 1500, color });

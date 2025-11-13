@@ -10,7 +10,7 @@ ion-toolbar.header-toolbar {
     --min-height: 60px;
     background: $header-bg;
     padding: 0;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+   
 }
 
 // Header Container
@@ -417,4 +417,12 @@ ion-toolbar.header-toolbar {
             font-size: 16px;
         }
     }
+}
+
+/* Remove shadow from toolbar in MD mode */
+ion-header.md,
+ion-header.md ion-toolbar {
+    --box-shadow: none !important;
+    box-shadow: none !important;
+    border-bottom: none !important;
 }

@@ -4,9 +4,11 @@
   
     <app-header [showSearchbar]="true" [showIcons]="true" (toggleMenu)="onHeaderToggleMenu()">
     <ion-item lines="none" button (click)="goToProfile()" class="user-bar">
-        <ion-avatar slot="start">
-          <img [src]="user.profile_image" alt="Profile" />
-        </ion-avatar>
+      <ion-avatar slot="start">
+        <img [src]="user.profile_image || 'assets/images/default-profile.png'"
+          (error)="user.profile_image='assets/images/default-profile.png'" alt="Profile" />
+      </ion-avatar>
+
       
         <ion-label>
           <h2>{{ user.first_name }} {{ user.last_name }}</h2>

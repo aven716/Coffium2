@@ -51,8 +51,12 @@ ion-content {
 }
 
 app-header {
-    background-color: whitesmoke;
-
+   
+      
+        box-shadow: none !important;
+        /* enforce removal */
+        border-bottom: none !important;
+      
     box-shadow: none;
 }
 

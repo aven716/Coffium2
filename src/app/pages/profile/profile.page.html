@@ -13,9 +13,10 @@
     <!-- Profile Header Card -->
     <div class="profile-header-card">
       <div class="profile-image-section">
-        <ion-avatar class="profile-avatar">
-          <img [src]="user.profile_image" alt="Profile Picture" />
-        </ion-avatar>
+      <ion-avatar slot="start">
+        <img [src]="user.profile_image || 'assets/images/default-profile.png'"
+          (error)="user.profile_image='assets/images/default-profile.png'" alt="Profile" />
+      </ion-avatar>
         <button *ngIf="isEditing" class="change-photo-btn" (click)="fileInput.click()">
           <ion-icon name="camera-outline"></ion-icon>
         </button>

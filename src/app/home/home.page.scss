@@ -209,8 +209,8 @@ h3{
   /* slightly off-white */
   border-radius: 15px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-  padding: 15px;
-  margin: 15px 0px;
+
+  margin: 15px auto;
   width: 100%;
   
   /* spacing between sections */
@@ -503,7 +503,7 @@ app-header {
   background: #fafafa;
   border-radius: 16px;
   padding: 16px 0;
-  margin: 16px 12px;
+  margin: 16px auto;
 
   .section-header {
     font-size: 20px;
@@ -597,3 +597,5 @@ app-header {
  #floatingRefresher ion-refresher-content ion-icon {
    font-size: 1.2rem;
  }
+
+

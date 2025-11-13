@@ -113,41 +113,63 @@
             </div>
 
             <!-- Order Summary -->
-            <div class="section">
-                <h2 class="section-title">Order Summary</h2>
-
-                <!-- Items -->
-                <div class="order-items">
-                    <div *ngFor="let item of cartItems" class="order-item">
-                        <img [src]="getProductImage(item.product_image)" [alt]="item.product_name">
-                        <div class="item-details">
-                            <h4>{{ item.product_name }}</h4>
-                            <p *ngIf="item.option_selected">{{ item.option_selected }}</p>
-                            <p class="quantity">Qty: {{ item.quantity }}</p>
-                        </div>
-                        <div class="item-price">
-                            ₱{{ item.total_price.toFixed(2) }}
-                        </div>
-                    </div>
+    <div class="order-summary">
+        <h2>Order Summary</h2>
+    
+        <!-- Buy Now Mode - Single Item -->
+        <div *ngIf="isBuyNowCheckout && buyNowItem" class="buy-now-item">
+            <div class="item-card">
+                <img [src]="getProductImage(buyNowItem.product_image)" [alt]="buyNowItem.product_name">
+                <div class="item-details">
+                    <h3>{{ buyNowItem.product_name }}</h3>
+                    <p class="option">{{ buyNowItem.option_selected }}</p>
+                    <p class="quantity">Qty: {{ buyNowItem.quantity }}</p>
+                    <p class="price">₱{{ buyNowItem.unit_price.toFixed(2) }}</p>
                 </div>
-
-                <!-- Price Breakdown -->
-                <div class="price-summary">
-                    <div class="price-row">
-                        <span>Subtotal</span>
-                        <span>₱{{ subtotal.toFixed(2) }}</span>
-                    </div>
-                    <div class="price-row" *ngIf="deliveryOption === 'delivery'">
-                        <span>Delivery Fee</span>
-                        <span>₱{{ deliveryFee.toFixed(2) }}</span>
-                    </div>
-                    <div class="price-divider"></div>
-                    <div class="price-row total">
-                        <span>Total</span>
-                        <span>₱{{ totalAmount.toFixed(2) }}</span>
-                    </div>
+                <div class="item-total">
+                    <strong>₱{{ buyNowItem.total_price.toFixed(2) }}</strong>
                 </div>
             </div>
+        </div>
+    
+        <!-- Regular Cart Mode - Multiple Items -->
+        <div *ngIf="!isBuyNowCheckout && cartItems.length > 0" class="cart-items">
+            <div *ngFor="let item of cartItems" class="item-card">
+                <img [src]="getProductImage(item.product_image)" [alt]="item.product_name">
+                <div class="item-details">
+                    <h3>{{ item.product_name }}</h3>
+                    <p class="option" *ngIf="item.option_selected">{{ item.option_selected }}</p>
+                    <p class="quantity">Qty: {{ item.quantity }}</p>
+                    <p class="price">₱{{ item.unit_price.toFixed(2) }}</p>
+                </div>
+                <div class="item-total">
+                    <strong>₱{{ item.total_price.toFixed(2) }}</strong>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Empty State -->
+        <div *ngIf="!isBuyNowCheckout && cartItems.length === 0" class="empty-cart">
+            <ion-icon name="cart-outline"></ion-icon>
+            <p>No items to checkout</p>
+        </div>
+    
+        <!-- Price Summary -->
+        <div class="price-summary">
+            <div class="summary-row">
+                <span>Subtotal:</span>
+                <span>₱{{ subtotal.toFixed(2) }}</span>
+            </div>
+            <div class="summary-row" *ngIf="deliveryOption === 'delivery'">
+                <span>Delivery Fee:</span>
+                <span>₱{{ deliveryFee.toFixed(2) }}</span>
+            </div>
+            <div class="summary-row total">
+                <span>Total:</span>
+                <strong>₱{{ totalAmount.toFixed(2) }}</strong>
+            </div>
+        </div>
+    </div>
 
         </div>
     </div>
@@ -165,3 +187,110 @@
 
     </div>
 </ion-footer>
+
+<style>
+    .order-summary {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .order-summary h2 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: #2D4739;
+    }
+
+    .item-card {
+        display: flex;
+        gap: 12px;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        align-items: center;
+    }
+
+    .item-card img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 6px;
+        flex-shrink: 0;
+    }
+
+    .item-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .item-details h3 {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0 0 4px 0;
+        color: #2D4739;
+    }
+
+    .item-details .option {
+        font-size: 12px;
+        color: #35593E;
+        margin: 0 0 4px 0;
+        font-weight: 500;
+    }
+
+    .item-details .quantity {
+        font-size: 12px;
+        color: #666;
+        margin: 0 0 4px 0;
+    }
+
+    .item-details .price {
+        font-size: 13px;
+        color: #999;
+        margin: 0;
+    }
+
+    .item-total {
+        flex-shrink: 0;
+    }
+
+    .item-total strong {
+        font-size: 16px;
+        color: #35593E;
+    }
+
+    .empty-cart {
+        text-align: center;
+        padding: 40px 20px;
+        color: #999;
+    }
+
+    .empty-cart ion-icon {
+        font-size: 64px;
+        opacity: 0.3;
+    }
+
+    .price-summary {
+        border-top: 2px solid #e0e0e0;
+        padding-top: 16px;
+        margin-top: 16px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .summary-row.total {
+        font-size: 18px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #e0e0e0;
+        color: #35593E;
+    }
+</style>

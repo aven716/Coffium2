@@ -1,13 +1,15 @@
 <ion-content class="verify-page">
-
-  <div class="verify-container">
-    <h1 class="title">Verify Email</h1>
-    <p class="subtitle">Enter the 6-digit code sent to your email</p>
-
+  <div class="verify-wrapper">
     <div class="verify-card">
-      <ion-item lines="none">
-      <ion-input label="OTP Code" labelPlacement="floating" type="number" maxlength="6" [(ngModel)]="otp" name="otp" required>
-      </ion-input>
+      <img src="assets/images/email-verify.svg" alt="Email Verification" class="verify-illustration" />
+
+      <h1 class="title">Verify Your Email</h1>
+      <p class="subtitle">Enter the 6-digit code we sent to your email address.</p>
+
+      <ion-item lines="none" class="otp-input">
+        <ion-input label="Verification Code" labelPlacement="floating" type="number" maxlength="6" [(ngModel)]="otp"
+          name="otp" required>
+        </ion-input>
       </ion-item>
 
       <ion-button expand="block" class="verify-btn" (click)="verifyOtp()">
@@ -15,10 +17,9 @@
       </ion-button>
 
       <p class="footer-text">
-        Didn’t receive the code?
-        <a (click)="resendOtp()">Resend</a>
+        Didn’t get the code?
+        <a (click)="resendOtp()">Resend Code</a>
       </p>
     </div>
   </div>
-
 </ion-content>

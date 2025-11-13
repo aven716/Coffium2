@@ -6,7 +6,7 @@ import { RouterModule, Router } from '@angular/router';
 import { CartService } from '../services/cart.service';
 import { WishlistService } from '../services/wishlist.service';
 import { Subscription } from 'rxjs';
-
+import { CheckoutService } from '../services/checkout.service';
 // ✅ Ionic Standalone Components
 import {
   IonItem,
@@ -86,7 +86,7 @@ export class HomePage {
       first_name: '',
       last_name: '',
       email: '',
-      profile_image: '',
+      profile_image: 'assets/images/default-profile.png',
       address: ''
     };
 
@@ -107,7 +107,8 @@ export class HomePage {
     private http: HttpClient,
     private router: Router,
     private cartService: CartService,
-    private wishlistService: WishlistService
+    private wishlistService: WishlistService,
+    private checkoutService: CheckoutService
   ) { }
   productBaseUrl = 'https://add2mart.shop/ionic/coffium/api/images/products/';
 
@@ -437,11 +438,18 @@ toggleMenu() {
       return;
     }
 
-    // Navigate to product page
-    this.router.navigate(['/product', product.product_id], {
-      queryParams: { buyNow: true }
-    });
- 
+    // Check if product has options
+    if (product.options && product.options.length > 0) {
+      // Navigate to product page for option selection
+      this.router.navigate(['/product', product.product_id], {
+        queryParams: { buyNow: 'true' }
+      });
+    } else {
+      // No options - proceed directly to checkout with default option
+      this.checkoutService.setBuyNowItem(product, 1, 'Default');
+      this.router.navigate(['/checkout']);
+      this.showToast('Proceeding to checkout...', 'primary');
+    }
   }
   doRefresh(event: any) {
     console.log('Refreshing...');

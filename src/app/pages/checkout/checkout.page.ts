@@ -21,7 +21,7 @@ import { locationOutline, cardOutline, cashOutline } from 'ionicons/icons';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import { Geolocation } from '@capacitor/geolocation';
-
+import { CheckoutService, BuyNowItem } from '../../services/checkout.service';
 
 interface CartItem {
     cart_item_id: number;
@@ -99,22 +99,24 @@ export class CheckoutPage implements OnInit, AfterViewInit {
         private http: HttpClient,
         private router: Router,
         private toastCtrl: ToastController,
-        private loadingCtrl: LoadingController
+        private loadingCtrl: LoadingController,
+        private checkoutService: CheckoutService // 👈
     ) {
         addIcons({ locationOutline, cardOutline, cashOutline });
 
 
     }
 
+    buyNowItem: BuyNowItem | null = null;
+    isBuyNowCheckout: boolean = false;
 
     ngOnInit() {
         // ⚡ 1️⃣ GCash deep link redirect: check URL query param first
         const urlParams = new URLSearchParams(window.location.search);
         const orderId = urlParams.get('order_id');
         if (orderId) {
-            // If we have an order_id from GCash redirect, skip checkout and go straight to OrderPage
             this.router.navigate(['/order', orderId]);
-            return; // stop initialization
+            return;
         }
 
         // ⚡ 2️⃣ Normal checkout flow
@@ -126,31 +128,39 @@ export class CheckoutPage implements OnInit, AfterViewInit {
             return;
         }
 
-        // ⚡ 3️⃣ Handle navigation state from Cart page
-        const navigation = this.router.getCurrentNavigation();
-        if (navigation?.extras?.state) {
-            if (navigation.extras.state['orderId']) {
-                const orderId = navigation.extras.state['orderId'];
-                this.router.navigate(['/order', orderId]);
-                return;
-            }
+        // ⚡ 3️⃣ Check if this is a "Buy Now" checkout
+        this.buyNowItem = this.checkoutService.getBuyNowItem();
+        this.isBuyNowCheckout = this.buyNowItem !== null;
 
-            // 👇 preserve delivery option sent from Cart page
-            if (navigation.extras.state['deliveryOption']) {
-                this.deliveryOption = navigation.extras.state['deliveryOption'];
+        if (this.isBuyNowCheckout) {
+            // Load user data but skip cart loading
+            this.loadUserData();
+            this.isLoading = false;
+            console.log('✅ Buy Now checkout mode');
+        } else {
+            // ⚡ 4️⃣ Handle navigation state from Cart page (regular checkout)
+            const navigation = this.router.getCurrentNavigation();
+            if (navigation?.extras?.state) {
+                if (navigation.extras.state['orderId']) {
+                    const orderId = navigation.extras.state['orderId'];
+                    this.router.navigate(['/order', orderId]);
+                    return;
+                }
 
-                // Initialize Mapbox automatically if "delivery" was chosen
-                if (this.deliveryOption === 'delivery') {
-                    setTimeout(() => this.initMapbox(), 0);
+                if (navigation.extras.state['deliveryOption']) {
+                    this.deliveryOption = navigation.extras.state['deliveryOption'];
+
+                    if (this.deliveryOption === 'delivery') {
+                        setTimeout(() => this.initMapbox(), 0);
+                    }
                 }
             }
+
+            // Load user data and cart for regular checkout
+            this.loadUserData();
+            this.loadCart();
         }
-
-        // Load user data and cart
-        this.loadUserData();
-        this.loadCart();
     }
-
 
 
 
@@ -198,6 +208,9 @@ export class CheckoutPage implements OnInit, AfterViewInit {
 
 
     get subtotal(): number {
+        if (this.isBuyNowCheckout && this.buyNowItem) {
+            return this.buyNowItem.total_price;
+        }
         return this.cartItems.reduce((sum, item) => sum + item.total_price, 0);
     }
 
@@ -243,20 +256,25 @@ export class CheckoutPage implements OnInit, AfterViewInit {
             return false;
         }
 
-        if (this.cartItems.length === 0) {
+        // Check if there are items (either Buy Now or Cart)
+        if (!this.isBuyNowCheckout && this.cartItems.length === 0) {
             this.showToast('Your cart is empty', 'warning');
+            return false;
+        }
+
+        if (this.isBuyNowCheckout && !this.buyNowItem) {
+            this.showToast('No product selected', 'warning');
             return false;
         }
 
         return true;
     }
-
     async placeOrder() {
-        if (this.isProcessing) return; // 🔒 prevent duplicate clicks
+        if (this.isProcessing) return;
         this.isProcessing = true;
 
         if (!this.validateForm()) {
-            this.isProcessing = false; // reset if validation fails
+            this.isProcessing = false;
             return;
         }
 
@@ -264,6 +282,26 @@ export class CheckoutPage implements OnInit, AfterViewInit {
         await loading.present();
 
         try {
+            // Prepare items array based on checkout type
+            let items: CartItem[];
+
+            if (this.isBuyNowCheckout && this.buyNowItem) {
+                // Convert Buy Now item to CartItem format
+                items = [{
+                    cart_item_id: 0, // Not from cart
+                    product_id: this.buyNowItem.product_id,
+                    product_name: this.buyNowItem.product_name,
+                    product_image: this.buyNowItem.product_image,
+                    quantity: this.buyNowItem.quantity,
+                    unit_price: this.buyNowItem.unit_price,
+                    total_price: this.buyNowItem.total_price,
+                    option_selected: this.buyNowItem.option_selected
+                }];
+            } else {
+                // Use cart items
+                items = this.cartItems;
+            }
+
             const orderData: OrderData = {
                 user_id: this.userId,
                 first_name: this.firstName,
@@ -275,10 +313,10 @@ export class CheckoutPage implements OnInit, AfterViewInit {
                 subtotal: this.subtotal,
                 delivery_fee: this.deliveryFee,
                 total_amount: this.totalAmount,
-                items: this.cartItems
+                items: items
             };
 
-            // 1️⃣ Create order in the database
+            // Create order in the database
             const res: any = await this.http
                 .post(`${this.apiBaseUrl}create_order.php`, orderData)
                 .toPromise();
@@ -298,7 +336,17 @@ export class CheckoutPage implements OnInit, AfterViewInit {
             } else {
                 await loading.dismiss();
                 this.showToast('Order placed successfully!', 'success');
-                this.clearCart();
+
+                // Clear cart only if it was a regular checkout
+                if (!this.isBuyNowCheckout) {
+                    this.clearCart();
+                }
+
+                // Clear Buy Now item if it was Buy Now checkout
+                if (this.isBuyNowCheckout) {
+                    this.checkoutService.clearBuyNowItem();
+                }
+
                 this.router.navigate(['/order', orderId]);
             }
 
@@ -306,13 +354,10 @@ export class CheckoutPage implements OnInit, AfterViewInit {
             await loading.dismiss();
             console.error(error);
             this.showToast('Server error, please try again later.', 'danger');
-        }
-        finally {
-            this.isProcessing = false; // 🔓 reset flag
+        } finally {
+            this.isProcessing = false;
         }
     }
-
-
 
 
 
